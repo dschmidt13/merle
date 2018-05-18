@@ -16,6 +16,7 @@ import java.util.ResourceBundle;
 
 import javax.imageio.ImageIO;
 
+import javafx.application.Platform;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleDoubleProperty;
@@ -473,6 +474,12 @@ public class MainController implements Initializable
 		fieldMerleService.setOnSucceeded( this::onSvcSuccess );
 		fieldMerleService.setOnFailed( this::onSvcFail );
 		fieldMerleService.progressProperty( ).addListener( this::onSvcProgress );
+
+		// Additional background init.
+		Platform.runLater( ( ) -> {
+		getFileChooser( );
+		getEditDialog( null );
+		} );
 
 	} // initialize
 
