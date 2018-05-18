@@ -184,6 +184,7 @@ public class MerleService extends Service<Void>
 				int iteration = 0;
 				while ( nullCount > 0 && !isCancelled( ) )
 					{
+					Map<Point, ColorGene> newSeeds = new HashMap<>( );
 					for ( int yIndex = 0; yIndex < height; yIndex++ )
 						{
 						for ( int xIndex = 0; xIndex < width; xIndex++ )
@@ -195,7 +196,7 @@ public class MerleService extends Service<Void>
 										iteration );
 
 								if ( color == null )
-									color = chooseSeedColor( colorGenes, seeds, p, random,
+									color = chooseSeedColor( colorGenes, newSeeds, p, random,
 											iteration );
 
 								if ( color != null )
@@ -206,6 +207,11 @@ public class MerleService extends Service<Void>
 								}
 							}
 						}
+
+					// This map is updated once per generation to prevent
+					// novel seeds from influencing fewer than all of the
+					// pixels.
+					seeds.putAll( newSeeds );
 
 					updateProgress( maxWork - nullCount, maxWork );
 					Platform.runLater(
