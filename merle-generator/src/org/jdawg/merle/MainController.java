@@ -5,6 +5,8 @@
  */
 package org.jdawg.merle;
 
+import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -302,6 +304,84 @@ public class MainController implements Initializable
 	} // actSave
 
 
+	private void compositePattern( )
+			throws IOException
+	{
+		// TODO - Break this up a bit.
+
+		// TODO - Make this more dynamic. Maybe a file chooser? Or a dropdown menu? Or a
+		// constant at the very least? (What are we going to do to select this in the
+		// future?)
+		// Read the base image.
+		BufferedImage dogBase = ImageIO.read( getClass( ).getResource( "/images/spitzbase.png" ) );
+
+		int baseWidth = dogBase.getWidth( );
+		int baseHeight = dogBase.getHeight( );
+
+		// Get the background image. We'll draw onto this.
+		BufferedImage background = getBackground( baseWidth, baseHeight );
+
+		// TODO - Calculate position if size isn't the same.
+		int bgOffsetX = 0;
+		int bgOffsetY = 0;
+
+		// Get the Canvas's pattern image.
+		BufferedImage pattern = SwingFXUtils.fromFXImage( fieldCanvas.snapshot( null, null ),
+				null );
+
+		int baseOffsetX = 0;
+		int baseOffsetY = 0;
+
+		// TODO - Validate against negatives so we don't go OOB.
+		// int baseOffsetX = ( int ) Math.round( ( pattern.getWidth( ) - dogBase.getWidth(
+		// ) ) / 2.0 );
+		// int baseOffsetY = ( int ) Math
+		// .round( ( pattern.getHeight( ) - dogBase.getHeight( ) ) / 2.0 );
+
+		// Copy pixels from the Canvas's image to BG where base is red.
+		int sRGBRed = ( 255 << 24 ) | ( 255 << 16 );
+		for ( int yIdx = 0; yIdx < baseHeight; yIdx++ )
+			{
+			for ( int xIdx = 0; xIdx < baseWidth; xIdx++ )
+				{
+				// Get base pixel colors and check against red with full alpha.
+				if ( dogBase.getRGB( xIdx, yIdx ) == sRGBRed )
+					{
+					// Copy from pattern to background at this pixel location.
+					background.setRGB( xIdx, yIdx, pattern.getRGB( xIdx, yIdx ) );
+					}
+				}
+			}
+
+		// Draw the lines image over the background image to create the final image.
+		// TODO - Again, a constant or something?
+		BufferedImage outline = ImageIO.read( getClass( ).getResource( "/images/spitzlines.png" ) );
+		Graphics2D bgGfx = ( Graphics2D ) background.getGraphics( );
+		bgGfx.drawImage( outline, null, 0, 0 );
+
+		// Paint the background over the canvas.
+		fieldCanvas.getGraphicsContext2D( ).drawImage( SwingFXUtils.toFXImage( background, null ),
+				0, 0 );
+
+	} // compositePattern
+
+
+	private BufferedImage getBackground( int minWidth, int minHeight )
+	{
+		// TODO - Load this from somewhere?
+		BufferedImage background = new BufferedImage( minWidth, minHeight,
+				BufferedImage.TYPE_INT_ARGB );
+		Graphics2D gfx = ( Graphics2D ) background.getGraphics( );
+		java.awt.Color oldFill = gfx.getColor( );
+		gfx.setColor( java.awt.Color.WHITE );
+		gfx.fillRect( 0, 0, minWidth, minHeight );
+		gfx.setColor( oldFill );
+
+		return background;
+
+	} // getBackground
+
+
 	private Dialog<Void> getEditDialog( ColorGene colorGene )
 	{
 		if ( fieldEditDialog == null )
@@ -382,7 +462,7 @@ public class MainController implements Initializable
 		fieldMerleService.setColorGenes( fieldColorGenes.getItems( ) );
 		fieldMerleService.setOnRunning( this::onSvcStart );
 		fieldMerleService.setOnCancelled( this::onSvcEnd );
-		fieldMerleService.setOnSucceeded( this::onSvcEnd );
+		fieldMerleService.setOnSucceeded( this::onSvcSuccess );
 		fieldMerleService.setOnFailed( this::onSvcFail );
 		fieldMerleService.progressProperty( ).addListener( this::onSvcProgress );
 
@@ -418,5 +498,21 @@ public class MainController implements Initializable
 		fieldProgressBar.setProgress( -1 );
 
 	} // onSvcStart
+
+
+	private void onSvcSuccess( WorkerStateEvent event )
+	{
+		fieldProgressBar.setVisible( false );
+		try
+			{
+			compositePattern( );
+			}
+		catch ( IOException exception )
+			{
+			// TODO Auto-generated catch block
+			exception.printStackTrace( );
+			}
+
+	} // onSvcSuccess
 
 }
