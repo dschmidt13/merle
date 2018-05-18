@@ -13,8 +13,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
-import java.util.SortedMap;
-import java.util.TreeMap;
 
 import org.jdawg.merle.MainController.ColorGene;
 
@@ -50,24 +48,31 @@ public class MerleService extends Service<Void>
 	private static Color chooseGrowthColor( List<ColorGene> colorGenes, Map<Point, ColorGene> seeds,
 			Point point, Random random, int iteration )
 	{
-		SortedMap<Double, ColorGene> map = new TreeMap<>( );
+		// Must beat 0 to replace null.
+		ColorGene strongestGene = null;
+		double strongestSignalDiff = 0;
 
+		ColorGene gene;
 		for ( Map.Entry<Point, ColorGene> entry : seeds.entrySet( ) )
 			{
-			Point p2 = entry.getKey( );
-			ColorGene gene = entry.getValue( );
+			gene = entry.getValue( );
 
-			double distance = point.distance( p2 );
+			double distance = point.distance( entry.getKey( ) );
 			double adjSignalStr = degradeSignal( gene.getSignalStrength( ), distance );
 			double randDiff = adjSignalStr - random.nextDouble( );
 
-			if ( randDiff > 0 )
-				map.put( randDiff, gene );
+			if ( randDiff > strongestSignalDiff )
+				{
+				strongestSignalDiff = randDiff;
+				strongestGene = gene;
+				}
 			}
 
 		Color growthColor = null;
-		if ( !map.isEmpty( ) )
-			growthColor = map.get( map.lastKey( ) ).getColor( );
+
+		// A non-null value here implies a signal > 0.
+		if ( strongestGene != null )
+			growthColor = strongestGene.getColor( );
 
 		return growthColor;
 
