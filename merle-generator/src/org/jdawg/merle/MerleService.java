@@ -182,7 +182,7 @@ public class MerleService extends Service<Void>
 				Platform.runLater( ( ) -> whitewash( canvas ) );
 
 				int iteration = 0;
-				while ( nullCount > 0 )
+				while ( nullCount > 0 && !isCancelled( ) )
 					{
 					for ( int yIndex = 0; yIndex < height; yIndex++ )
 						{

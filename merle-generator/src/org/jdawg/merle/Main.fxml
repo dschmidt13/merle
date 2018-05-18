@@ -53,6 +53,7 @@
       <HBox alignment="CENTER" spacing="50.0" BorderPane.alignment="CENTER">
          <children>
 				<Button alignment="TOP_CENTER" contentDisplay="CENTER" mnemonicParsing="false" onAction="#actGenerate" text="Generate" />
+            <Button alignment="TOP_CENTER" contentDisplay="CENTER" mnemonicParsing="false" onAction="#actCancel" text="Cancel" />
 				<Button mnemonicParsing="false" onAction="#actCopy" text="Copy" />
             <Button mnemonicParsing="false" onAction="#actSave" text="Save" />
          </children>

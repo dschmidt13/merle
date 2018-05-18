@@ -243,6 +243,13 @@ public class MainController implements Initializable
 	} // actAddColorGene
 
 
+	public void actCancel( )
+	{
+		fieldMerleService.cancel( );
+
+	} // actCancel
+
+
 	public void actCopy( )
 	{
 		WritableImage image = fieldCanvas.snapshot( null, null );
@@ -267,7 +274,8 @@ public class MainController implements Initializable
 
 	public void actGenerate( )
 	{
-		fieldMerleService.restart( );
+		if ( !fieldColorGenes.getItems( ).isEmpty( ) )
+			fieldMerleService.restart( );
 
 	} // actGenerate
 
