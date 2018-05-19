@@ -25,6 +25,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.ObservableList;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXML;
@@ -41,7 +42,10 @@ import javafx.scene.control.SelectionMode;
 import javafx.scene.image.WritableImage;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
+import javafx.scene.input.DragEvent;
+import javafx.scene.input.Dragboard;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.input.TransferMode;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
@@ -170,8 +174,130 @@ public class MainController implements Initializable
 
 	} // class ColorGene
 
-	private static class ColorGeneCell extends ListCell<ColorGene>
+	private class ColorGeneCell extends ListCell<ColorGene>
 	{
+		private static final String STYLE_DRAG_INSERT_POINT = "" //
+				+ "-fx-border-width: 3px 0px 0px 0px; " //
+				+ "-fx-border-color: black; " //
+				+ "-fx-border-style: solid; ";
+
+
+		public ColorGeneCell( )
+		{
+			// Set up event handlers.
+			initHandlers( );
+
+		} // ColorGeneCell
+
+
+		private void initHandlers( )
+		{
+			setOnDragDetected( this::onDragDetected );
+			setOnDragEntered( this::onDragEntered );
+			setOnDragExited( this::onDragExited );
+			setOnDragOver( this::onDragOver );
+			setOnDragDropped( this::onDragDropped );
+
+		} // initHandlers
+
+
+		private void moveInList( int sourceIndex, int targetIndex )
+		{
+			// When it's a real item being dragged, remove it from the model list and add
+			// it at the target index or the end.
+			ObservableList<ColorGene> genes = fieldColorGenes.getItems( );
+			if ( ( sourceIndex != targetIndex ) && ( sourceIndex < genes.size( ) ) )
+				{
+				// Remove the source gene from its position in the list.
+				ColorGene sourceGene = genes.remove( sourceIndex );
+
+				// Moving up in the list: targetIndex doesn't change after removal.
+				if ( sourceIndex > targetIndex )
+					genes.add( targetIndex, sourceGene );
+
+				// Moving down in the list, but not out of bounds: targetIndex has shrunk
+				// by 1 after removal.
+				else if ( ( targetIndex - 1 ) < genes.size( ) )
+					genes.add( targetIndex - 1, sourceGene );
+
+				// Moving past the end of the list (targetIndex is irrelevant).
+				else
+					genes.add( sourceGene );
+				}
+
+		} // moveInList
+
+
+		private void onDragDetected( MouseEvent event )
+		{
+			if ( getItem( ) != null )
+				{
+				event.consume( );
+
+				// Start a drag and drop and set up the dragboard.
+				Dragboard dragboard = startDragAndDrop( TransferMode.MOVE );
+				dragboard.setDragView( snapshot( null, null ) );
+
+				ClipboardContent content = new ClipboardContent( );
+				content.putString( getItem( ).getName( ) );
+
+				dragboard.setContent( content );
+
+				// Clear list selection.
+				fieldColorGenes.getSelectionModel( ).clearSelection( );
+				}
+
+		} // onDragDetected
+
+
+		private void onDragDropped( DragEvent event )
+		{
+			if ( event.getGestureSource( ) instanceof ColorGeneCell )
+				{
+				moveInList( ( ( ColorGeneCell ) event.getGestureSource( ) ).getIndex( ),
+						getIndex( ) );
+
+				// Let the system know we succeeded.
+				event.setDropCompleted( true );
+				event.consume( );
+				}
+
+		} // onDragDropped
+
+
+		private void onDragEntered( DragEvent event )
+		{
+			if ( event.getGestureSource( ) instanceof ColorGeneCell )
+				{
+				setStyle( STYLE_DRAG_INSERT_POINT );
+				event.consume( );
+				}
+
+		} // onDragEntered
+
+
+		private void onDragExited( DragEvent event )
+		{
+			if ( event.getGestureSource( ) instanceof ColorGeneCell )
+				{
+				setStyle( "" );
+				event.consume( );
+				}
+
+		} // onDragExited
+
+
+		private void onDragOver( DragEvent event )
+		{
+			if ( event.getGestureSource( ) instanceof ColorGeneCell )
+				{
+				event.acceptTransferModes( TransferMode.MOVE );
+				event.consume( );
+				}
+
+		} // onDragOver
+
+
 		@Override
 		protected void updateItem( ColorGene item, boolean empty )
 		{
