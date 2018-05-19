@@ -8,6 +8,7 @@ package org.jdawg.merle;
 import java.net.URL;
 import java.util.ResourceBundle;
 
+import org.jdawg.fxcontrol.NumericTextField;
 import org.jdawg.merle.MainController.ColorGene;
 
 import javafx.fxml.FXML;
@@ -36,25 +37,25 @@ public class ColorGeneEditorController implements Initializable
 	private Slider fieldRed;
 
 	@FXML
-	private TextField fieldRedText;
+	private NumericTextField fieldRedText;
 
 	@FXML
 	private Slider fieldGreen;
 
 	@FXML
-	private TextField fieldGreenText;
+	private NumericTextField fieldGreenText;
 
 	@FXML
 	private Slider fieldBlue;
 
 	@FXML
-	private TextField fieldBlueText;
+	private NumericTextField fieldBlueText;
 
 	@FXML
 	private Slider fieldAlpha;
 
 	@FXML
-	private TextField fieldAlphaText;
+	private NumericTextField fieldAlphaText;
 
 	@FXML
 	private Canvas fieldSample;
@@ -63,19 +64,19 @@ public class ColorGeneEditorController implements Initializable
 	private Slider fieldConversionProbability;
 
 	@FXML
-	private TextField fieldConversionProbabilityText;
+	private NumericTextField fieldConversionProbabilityText;
 
 	@FXML
 	private Slider fieldCoolingRate;
 
 	@FXML
-	private TextField fieldCoolingRateText;
+	private NumericTextField fieldCoolingRateText;
 
 	@FXML
 	private Slider fieldSignalStrength;
 
 	@FXML
-	private TextField fieldSignalStrengthText;
+	private NumericTextField fieldSignalStrengthText;
 
 
 	public void acceptChanges( )
@@ -125,60 +126,21 @@ public class ColorGeneEditorController implements Initializable
 
 	private void initSliders( )
 	{
-		// Configure slider->text update listeners.
-		fieldRed.valueProperty( )
-				.addListener( ( obs, old, nw ) -> updateTextFromSlider( nw, fieldRedText, 0 ) );
-		fieldGreen.valueProperty( )
-				.addListener( ( obs, old, nw ) -> updateTextFromSlider( nw, fieldGreenText, 0 ) );
-		fieldBlue.valueProperty( )
-				.addListener( ( obs, old, nw ) -> updateTextFromSlider( nw, fieldBlueText, 0 ) );
-		fieldAlpha.valueProperty( )
-				.addListener( ( obs, old, nw ) -> updateTextFromSlider( nw, fieldAlphaText, 0 ) );
-		fieldConversionProbability.valueProperty( ).addListener(
-				( obs, old, nw ) -> updateTextFromSlider( nw, fieldConversionProbabilityText, 6 ) );
-		fieldCoolingRate.valueProperty( ).addListener(
-				( obs, old, nw ) -> updateTextFromSlider( nw, fieldCoolingRateText, 6 ) );
-		fieldSignalStrength.valueProperty( ).addListener(
-				( obs, old, nw ) -> updateTextFromSlider( nw, fieldSignalStrengthText, 2 ) );
-
-		// Configure text->slider update listeners.
-		fieldRedText.textProperty( )
-				.addListener( ( obs, old, nw ) -> updateSliderFromTextValue( nw, fieldRed ) );
-		fieldGreenText.textProperty( )
-				.addListener( ( obs, old, nw ) -> updateSliderFromTextValue( nw, fieldGreen ) );
-		fieldBlueText.textProperty( )
-				.addListener( ( obs, old, nw ) -> updateSliderFromTextValue( nw, fieldBlue ) );
-		fieldAlphaText.textProperty( )
-				.addListener( ( obs, old, nw ) -> updateSliderFromTextValue( nw, fieldAlpha ) );
-		fieldConversionProbabilityText.textProperty( ).addListener(
-				( obs, old, nw ) -> updateSliderFromTextValue( nw, fieldConversionProbability ) );
-		fieldCoolingRateText.textProperty( ).addListener(
-				( obs, old, nw ) -> updateSliderFromTextValue( nw, fieldCoolingRate ) );
-		fieldSignalStrengthText.textProperty( ).addListener(
-				( obs, old, nw ) -> updateSliderFromTextValue( nw, fieldSignalStrength ) );
-
-		// Jiggle sliders to ensure all text fields get filled in. (If we only start on a
-		// default, they won't.)
-		fieldRed.setValue( 1 );
-		fieldGreen.setValue( 1 );
-		fieldBlue.setValue( 1 );
-		fieldAlpha.setValue( 1 );
-		fieldConversionProbability.setValue( 1 );
-		fieldCoolingRate.setValue( 1 );
-		fieldSignalStrength.setValue( 1 );
-		fieldRed.setValue( 0 );
-		fieldGreen.setValue( 0 );
-		fieldBlue.setValue( 0 );
-		fieldAlpha.setValue( 0 );
-		fieldConversionProbability.setValue( 0 );
-		fieldCoolingRate.setValue( 0 );
-		fieldSignalStrength.setValue( 0 );
-
-		// Configure sample redraw listeners after jiggle to prevent excessive rendering.
+		// Configure sample redraw listeners.
 		fieldRed.valueProperty( ).addListener( ( obs, old, nw ) -> redrawSample( ) );
 		fieldGreen.valueProperty( ).addListener( ( obs, old, nw ) -> redrawSample( ) );
 		fieldBlue.valueProperty( ).addListener( ( obs, old, nw ) -> redrawSample( ) );
 		fieldAlpha.valueProperty( ).addListener( ( obs, old, nw ) -> redrawSample( ) );
+
+		// Configure slider/text field bindings.
+		fieldRedText.setNumberProperty( fieldRed.valueProperty( ), 0 );
+		fieldGreenText.setNumberProperty( fieldGreen.valueProperty( ), 0 );
+		fieldBlueText.setNumberProperty( fieldBlue.valueProperty( ), 0 );
+		fieldAlphaText.setNumberProperty( fieldAlpha.valueProperty( ), 0 );
+		fieldConversionProbabilityText
+				.setNumberProperty( fieldConversionProbability.valueProperty( ), 6 );
+		fieldCoolingRateText.setNumberProperty( fieldCoolingRate.valueProperty( ), 3 );
+		fieldSignalStrengthText.setNumberProperty( fieldSignalStrength.valueProperty( ), 2 );
 
 	} // jiggleInitSliders
 
@@ -227,30 +189,5 @@ public class ColorGeneEditorController implements Initializable
 			}
 
 	} // setColorGene
-
-
-	private void updateSliderFromTextValue( String textValue, Slider slider )
-	{
-		try
-			{
-			double doubleValue = Double.parseDouble( textValue );
-			slider.setValue( doubleValue );
-			}
-		catch ( NumberFormatException exception )
-			{
-			// Ignore it.
-			}
-
-	} // updateSliderFromTextValue
-
-
-	private void updateTextFromSlider( Number sliderValue, TextField textField, int precision )
-	{
-		String sliderText = String.format( "%." + precision + "f", sliderValue.doubleValue( ) );
-
-		if ( !sliderText.equals( textField.getText( ) ) )
-			textField.setText( sliderText );
-
-	} // updateTextFromSlider
 
 }
