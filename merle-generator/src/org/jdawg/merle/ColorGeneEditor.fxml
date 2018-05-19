@@ -46,7 +46,7 @@
 				<HBox alignment="CENTER" spacing="5.0">
 					<children>
 						<Label contentDisplay="RIGHT" prefWidth="45.0" text="Alpha:" />
-						<Slider fx:id="fieldAlpha" blockIncrement="1.0" max="225.0" value="255.0" />
+						<Slider fx:id="fieldAlpha" blockIncrement="1.0" max="255.0" value="255.0" />
                   <NumericTextField fx:id="fieldAlphaText" prefWidth="50.0" />
 					</children>
 				</HBox>
