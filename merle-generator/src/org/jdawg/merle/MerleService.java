@@ -95,7 +95,7 @@ public class MerleService extends Service<Void>
 				}
 			}
 
-		if ( gene != null )
+		if ( gene != null && gene.getSignalStrength( ) > 0 )
 			seeds.put( point, gene );
 
 		return ( gene == null ) ? null : gene.getColor( );
