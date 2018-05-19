@@ -11,6 +11,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -432,7 +433,8 @@ public class MainController implements Initializable
 			fieldFileChooser = new FileChooser( );
 			fieldFileChooser.setTitle( "Save as..." );
 
-			ExtensionFilter filter = new ExtensionFilter( "PNG Image", "*.png" );
+			ExtensionFilter filter = new ExtensionFilter( "PNG Image", Arrays.asList( "*.png" ) );
+			fieldFileChooser.getExtensionFilters( ).add( filter );
 			fieldFileChooser.setSelectedExtensionFilter( filter );
 			}
 
