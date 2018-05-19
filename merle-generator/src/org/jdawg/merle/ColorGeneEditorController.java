@@ -148,6 +148,8 @@ public class ColorGeneEditorController implements Initializable
 	private void redrawSample( )
 	{
 		GraphicsContext gfx = fieldSample.getGraphicsContext2D( );
+		gfx.setFill( Color.WHITE );
+		gfx.fillRect( 0, 0, fieldSample.getWidth( ), fieldSample.getHeight( ) );
 		gfx.setFill( getColor( ) );
 		gfx.fillRect( 0, 0, fieldSample.getWidth( ), fieldSample.getHeight( ) );
 
