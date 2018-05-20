@@ -5,8 +5,14 @@
  */
 package org.jdawg.fxcontrol;
 
+import java.io.IOException;
+import java.net.URL;
+import java.util.ResourceBundle;
+
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleDoubleProperty;
+import javafx.fxml.FXMLLoader;
+import javafx.fxml.Initializable;
 import javafx.scene.control.TextField;
 
 /**
@@ -14,8 +20,11 @@ import javafx.scene.control.TextField;
  * 
  * @author David Schmidt (dschmidt13@gmail.com)
  */
-public class NumericTextField extends TextField
+public class NumericTextField extends TextField implements Initializable
 {
+	// Class constants.
+	private static final String COMPONENT_FXML_FILENAME = "NumericTextField.fxml";
+
 	// Data members.
 	private Property<Number> fieldNumberProperty;
 
@@ -30,11 +39,34 @@ public class NumericTextField extends TextField
 	 */
 	public NumericTextField( )
 	{
+		// Per tutorial example at:
+		// https://docs.oracle.com/javafx/2/fxml_get_started/custom_control.htm
+
+		// This instance will serve as our controller and dynamic root of our FXML graph.
+		FXMLLoader loader = new FXMLLoader( getClass( ).getResource( COMPONENT_FXML_FILENAME ) );
+		loader.setRoot( this );
+		loader.setController( this );
+
+		try
+			{
+			loader.load( );
+			}
+		catch ( IOException exception )
+			{
+			throw new RuntimeException( exception );
+			}
+
+	} // NumericTextField
+
+
+	@Override
+	public void initialize( URL location, ResourceBundle resources )
+	{
 		setText( "0" );
 		textProperty( ).addListener( ( obs, old, nw ) -> updateNumberFromText( nw ) );
 		fieldInternalNumberProperty.addListener( ( obs, old, nw ) -> updateTextFromNumber( nw ) );
 
-	} // NumericTextField
+	} // initialize
 
 
 	public void setNumberProperty( Property<Number> numberProperty, int maxPrecision )
