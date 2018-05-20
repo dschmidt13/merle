@@ -13,6 +13,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.ResourceBundle;
 
 import javax.imageio.ImageIO;
@@ -22,11 +23,14 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.embed.swing.SwingFXUtils;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.canvas.Canvas;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.DialogPane;
 import javafx.scene.control.ListCell;
@@ -76,7 +80,7 @@ public class MainController implements Initializable
 				if ( getItem( ) == null )
 					actAddColorGene( );
 				else
-					actEditColorGene( getItem( ) );
+					editColorGene( getItem( ) );
 
 				event.consume( );
 				}
@@ -232,7 +236,7 @@ public class MainController implements Initializable
 
 	// Data members.
 	private FileChooser fieldFileChooser;
-	private Dialog<Void> fieldEditDialog;
+	private Dialog<Boolean> fieldEditDialog;
 	private ColorGeneEditorController fieldEditorController;
 
 	// Background service.
@@ -260,8 +264,8 @@ public class MainController implements Initializable
 	public void actAddColorGene( )
 	{
 		ColorGene gene = new ColorGene( );
-		fieldColorGenes.getItems( ).add( gene );
-		actEditColorGene( gene );
+		if ( editColorGene( gene ) )
+			fieldColorGenes.getItems( ).add( gene );
 
 	} // actAddColorGene
 
@@ -283,14 +287,6 @@ public class MainController implements Initializable
 		clipboard.setContent( content );
 
 	} // actCopy
-
-
-	public void actEditColorGene( ColorGene colorGene )
-	{
-		Dialog dialog = getEditDialog( colorGene );
-		dialog.showAndWait( );
-
-	} // actEditColorGene
 
 
 	public void actGenerate( )
@@ -395,6 +391,20 @@ public class MainController implements Initializable
 	} // compositePattern
 
 
+	private boolean editColorGene( ColorGene colorGene )
+	{
+		boolean saved = false;
+
+		Dialog<Boolean> dialog = getEditDialog( colorGene );
+		Optional<Boolean> result = dialog.showAndWait( );
+		if ( result.isPresent( ) )
+			saved = result.get( ).booleanValue( );
+
+		return saved;
+
+	} // actEditColorGene
+
+
 	private BufferedImage getBackground( int minWidth, int minHeight )
 	{
 		// TODO - Load this from somewhere?
@@ -411,7 +421,7 @@ public class MainController implements Initializable
 	} // getBackground
 
 
-	private Dialog<Void> getEditDialog( ColorGene colorGene )
+	private Dialog<Boolean> getEditDialog( ColorGene colorGene )
 	{
 		if ( fieldEditDialog == null )
 			{
@@ -430,6 +440,19 @@ public class MainController implements Initializable
 				fieldEditDialog.initModality( Modality.APPLICATION_MODAL );
 				fieldEditDialog.setTitle( "Edit Gene" );
 				fieldEditDialog.setDialogPane( pane );
+
+				// Add buttons.
+				pane.getButtonTypes( ).add( ButtonType.OK );
+				pane.getButtonTypes( ).add( ButtonType.CANCEL );
+
+				// Configure OK button to update its gene with the changes. Wired per
+				// Dialog validation Javadoc note.
+				Button okBtn = ( Button ) pane.lookupButton( ButtonType.OK );
+				okBtn.addEventFilter( ActionEvent.ACTION, fieldEditorController::handleOk );
+
+				// Lets the caller know whether the user accepted the changes.
+				fieldEditDialog
+						.setResultConverter( ( buttonType ) -> ButtonType.OK.equals( buttonType ) );
 				}
 			catch ( IOException exception )
 				{

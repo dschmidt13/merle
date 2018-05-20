@@ -10,6 +10,7 @@ import java.util.ResourceBundle;
 
 import org.jdawg.fxcontrol.NumericTextField;
 
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.canvas.Canvas;
@@ -80,22 +81,18 @@ public class ColorGeneEditorController implements Initializable
 
 	public void acceptChanges( )
 	{
-		fieldGene.setName( fieldName.getText( ) );
-		fieldGene.setColor( getColor( ) );
-		fieldGene.setSeedConversionProb( fieldConversionProbability.getValue( ) );
-		fieldGene.setSignalStrength( fieldSignalStrength.getValue( ) );
-		fieldGene.setCoolingRate( fieldCoolingRate.getValue( ) );
-
-		closeDialog( );
+		// TODO - This should probably just look up the ColorGene in the list and replace
+		// it. Maybe we should be given the index when we start editing.
+		if ( fieldGene != null )
+			{
+			fieldGene.setName( fieldName.getText( ) );
+			fieldGene.setColor( getColor( ) );
+			fieldGene.setSeedConversionProb( fieldConversionProbability.getValue( ) );
+			fieldGene.setSignalStrength( fieldSignalStrength.getValue( ) );
+			fieldGene.setCoolingRate( fieldCoolingRate.getValue( ) );
+			}
 
 	} // acceptChanges
-
-
-	private void closeDialog( )
-	{
-		fieldName.getScene( ).getWindow( ).hide( );
-
-	} // closeDialog
 
 
 	private Color getColor( )
@@ -106,6 +103,15 @@ public class ColorGeneEditorController implements Initializable
 		return color;
 
 	} // getColor
+
+
+	public void handleOk( ActionEvent event )
+	{
+		// Someday we might want to do validation or something here.
+
+		acceptChanges( );
+
+	} // handleOk
 
 
 	@Override
@@ -153,13 +159,6 @@ public class ColorGeneEditorController implements Initializable
 		gfx.fillRect( 0, 0, fieldSample.getWidth( ), fieldSample.getHeight( ) );
 
 	} // redrawSample
-
-
-	public void rejectChanges( )
-	{
-		closeDialog( );
-
-	} // rejectChanges
 
 
 	public void setColorGene( ColorGene gene )
