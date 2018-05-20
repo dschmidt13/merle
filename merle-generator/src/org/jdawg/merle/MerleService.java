@@ -14,8 +14,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
 
-import org.jdawg.merle.MainController.ColorGene;
-
 import javafx.application.Platform;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;

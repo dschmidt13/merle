@@ -18,12 +18,6 @@ import java.util.ResourceBundle;
 import javax.imageio.ImageIO;
 
 import javafx.application.Platform;
-import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleDoubleProperty;
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.concurrent.WorkerStateEvent;
@@ -46,7 +40,6 @@ import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
-import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Modality;
@@ -58,122 +51,6 @@ import javafx.stage.Modality;
  */
 public class MainController implements Initializable
 {
-	static class ColorGene
-	{
-		private StringProperty name = new SimpleStringProperty( "Black" );
-		private ObjectProperty<Color> color = new SimpleObjectProperty<>( Color.BLACK );
-		private DoubleProperty seedConversionProb = new SimpleDoubleProperty( 0.15 );
-		private DoubleProperty coolingRate = new SimpleDoubleProperty( 0.2 );
-		private DoubleProperty signalStrength = new SimpleDoubleProperty( 50 );
-
-
-		public ColorGene( )
-		{
-		} // ColorGene;
-
-
-		public ColorGene( ColorGene colorGene )
-		{
-			name = colorGene.name;
-			color = colorGene.color;
-			seedConversionProb = colorGene.seedConversionProb;
-			coolingRate = colorGene.coolingRate;
-			signalStrength = colorGene.signalStrength;
-
-		} // ColorGene
-
-
-		public ObjectProperty<Color> colorProperty( )
-		{
-			return color;
-		}
-
-
-		public DoubleProperty coolingRateProperty( )
-		{
-			return coolingRate;
-		}
-
-
-		public Color getColor( )
-		{
-			return colorProperty( ).get( );
-		}
-
-
-		public double getCoolingRate( )
-		{
-			return coolingRateProperty( ).get( );
-		}
-
-
-		public String getName( )
-		{
-			return nameProperty( ).get( );
-		}
-
-
-		public double getSeedConversionProb( )
-		{
-			return seedConversionProbProperty( ).get( );
-		}
-
-
-		public double getSignalStrength( )
-		{
-			return signalStrengthProperty( ).get( );
-		}
-
-
-		public StringProperty nameProperty( )
-		{
-			return name;
-		}
-
-
-		public DoubleProperty seedConversionProbProperty( )
-		{
-			return seedConversionProb;
-		}
-
-
-		public void setColor( Color color )
-		{
-			colorProperty( ).set( color );
-		}
-
-
-		public void setCoolingRate( double coolingRate )
-		{
-			coolingRateProperty( ).set( coolingRate );
-		}
-
-
-		public void setName( String name )
-		{
-			nameProperty( ).set( name );
-		}
-
-
-		public void setSeedConversionProb( double seedConversionProb )
-		{
-			seedConversionProbProperty( ).set( seedConversionProb );
-		}
-
-
-		public void setSignalStrength( double signalStrength )
-		{
-			signalStrengthProperty( ).set( signalStrength );
-		}
-
-
-		public DoubleProperty signalStrengthProperty( )
-		{
-			return signalStrength;
-		}
-
-	} // class ColorGene
-
 	private class ColorGeneCell extends ListCell<ColorGene>
 	{
 		// Class constants.

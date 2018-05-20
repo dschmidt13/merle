@@ -9,7 +9,6 @@ import java.net.URL;
 import java.util.ResourceBundle;
 
 import org.jdawg.fxcontrol.NumericTextField;
-import org.jdawg.merle.MainController.ColorGene;
 
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
