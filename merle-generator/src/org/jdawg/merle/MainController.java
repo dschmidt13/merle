@@ -38,6 +38,7 @@ import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
 import javafx.stage.FileChooser;
@@ -70,9 +71,14 @@ public class MainController implements Initializable
 
 		private void handleClick( MouseEvent event )
 		{
-			if ( getItem( ) != null && event.getClickCount( ) == 2 )
+			if ( event.getClickCount( ) == 2 )
 				{
-				actEditColorGene( getItem( ) );
+				if ( getItem( ) == null )
+					actAddColorGene( );
+				else
+					actEditColorGene( getItem( ) );
+
+				event.consume( );
 				}
 
 		} // handleClick
@@ -456,12 +462,40 @@ public class MainController implements Initializable
 	} // getFileChooser
 
 
+	private void handleGeneListClick( MouseEvent event )
+	{
+		if ( event.getClickCount( ) == 2 )
+			{
+			actAddColorGene( );
+			event.consume( );
+			}
+
+	} // handleGeneListClick
+
+
+	private void handleGeneListKeyPressed( KeyEvent event )
+	{
+		switch ( event.getCode( ) )
+			{
+			case DELETE :
+				actRemoveSelectedColorGenes( );
+				break;
+
+			default :
+				// Do nothing by default.
+				break;
+			}
+
+	} // handleGeneListKeyPressed
+
+
 	@Override
 	public void initialize( URL location, ResourceBundle resources )
 	{
 		fieldColorGenes.getSelectionModel( ).setSelectionMode( SelectionMode.MULTIPLE );
 		fieldColorGenes.setCellFactory( ( ignored ) -> new ColorGeneCell( ) );
-		fieldColorGenes.setFocusTraversable( false );
+		fieldColorGenes.setOnMouseClicked( this::handleGeneListClick );
+		fieldColorGenes.setOnKeyPressed( this::handleGeneListKeyPressed );
 
 		fieldMerleService = new MerleService( );
 		fieldMerleService.setCanvas( fieldCanvas );
