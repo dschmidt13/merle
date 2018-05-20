@@ -176,6 +176,7 @@ public class MainController implements Initializable
 
 	private class ColorGeneCell extends ListCell<ColorGene>
 	{
+		// Class constants.
 		private static final String STYLE_DRAG_INSERT_POINT = "" //
 				+ "-fx-border-width: 3px 0px 0px 0px; " //
 				+ "-fx-border-color: black; " //
@@ -190,13 +191,94 @@ public class MainController implements Initializable
 		} // ColorGeneCell
 
 
+		private void handleClick( MouseEvent event )
+		{
+			if ( getItem( ) != null && event.getClickCount( ) == 2 )
+				{
+				actEditColorGene( getItem( ) );
+				}
+
+		} // handleClick
+
+
+		private void handleDragDetected( MouseEvent event )
+		{
+			if ( getItem( ) != null )
+				{
+				event.consume( );
+
+				// Start a drag and drop and set up the dragboard.
+				Dragboard dragboard = startDragAndDrop( TransferMode.MOVE );
+				dragboard.setDragView( snapshot( null, null ) );
+
+				ClipboardContent content = new ClipboardContent( );
+				content.putString( getItem( ).getName( ) );
+
+				dragboard.setContent( content );
+
+				// Clear list selection.
+				fieldColorGenes.getSelectionModel( ).clearSelection( );
+				}
+
+		} // handleDragDetected
+
+
+		private void handleDragDropped( DragEvent event )
+		{
+			if ( event.getGestureSource( ) instanceof ColorGeneCell )
+				{
+				moveInList( ( ( ColorGeneCell ) event.getGestureSource( ) ).getIndex( ),
+						getIndex( ) );
+
+				// Let the system know we succeeded.
+				event.setDropCompleted( true );
+				event.consume( );
+				}
+
+		} // handleDragDropped
+
+
+		private void handleDragEntered( DragEvent event )
+		{
+			if ( event.getGestureSource( ) instanceof ColorGeneCell )
+				{
+				setStyle( STYLE_DRAG_INSERT_POINT );
+				event.consume( );
+				}
+
+		} // handleDragEntered
+
+
+		private void handleDragExited( DragEvent event )
+		{
+			if ( event.getGestureSource( ) instanceof ColorGeneCell )
+				{
+				setStyle( "" );
+				event.consume( );
+				}
+
+		} // handleDragExited
+
+
+		private void handleDragOver( DragEvent event )
+		{
+			if ( event.getGestureSource( ) instanceof ColorGeneCell )
+				{
+				event.acceptTransferModes( TransferMode.MOVE );
+				event.consume( );
+				}
+
+		} // handleDragOver
+
+
 		private void initHandlers( )
 		{
-			setOnDragDetected( this::onDragDetected );
-			setOnDragEntered( this::onDragEntered );
-			setOnDragExited( this::onDragExited );
-			setOnDragOver( this::onDragOver );
-			setOnDragDropped( this::onDragDropped );
+			setOnDragDetected( this::handleDragDetected );
+			setOnDragEntered( this::handleDragEntered );
+			setOnDragExited( this::handleDragExited );
+			setOnDragOver( this::handleDragOver );
+			setOnDragDropped( this::handleDragDropped );
+			setOnMouseClicked( this::handleClick );
 
 		} // initHandlers
 
@@ -226,76 +308,6 @@ public class MainController implements Initializable
 				}
 
 		} // moveInList
-
-
-		private void onDragDetected( MouseEvent event )
-		{
-			if ( getItem( ) != null )
-				{
-				event.consume( );
-
-				// Start a drag and drop and set up the dragboard.
-				Dragboard dragboard = startDragAndDrop( TransferMode.MOVE );
-				dragboard.setDragView( snapshot( null, null ) );
-
-				ClipboardContent content = new ClipboardContent( );
-				content.putString( getItem( ).getName( ) );
-
-				dragboard.setContent( content );
-
-				// Clear list selection.
-				fieldColorGenes.getSelectionModel( ).clearSelection( );
-				}
-
-		} // onDragDetected
-
-
-		private void onDragDropped( DragEvent event )
-		{
-			if ( event.getGestureSource( ) instanceof ColorGeneCell )
-				{
-				moveInList( ( ( ColorGeneCell ) event.getGestureSource( ) ).getIndex( ),
-						getIndex( ) );
-
-				// Let the system know we succeeded.
-				event.setDropCompleted( true );
-				event.consume( );
-				}
-
-		} // onDragDropped
-
-
-		private void onDragEntered( DragEvent event )
-		{
-			if ( event.getGestureSource( ) instanceof ColorGeneCell )
-				{
-				setStyle( STYLE_DRAG_INSERT_POINT );
-				event.consume( );
-				}
-
-		} // onDragEntered
-
-
-		private void onDragExited( DragEvent event )
-		{
-			if ( event.getGestureSource( ) instanceof ColorGeneCell )
-				{
-				setStyle( "" );
-				event.consume( );
-				}
-
-		} // onDragExited
-
-
-		private void onDragOver( DragEvent event )
-		{
-			if ( event.getGestureSource( ) instanceof ColorGeneCell )
-				{
-				event.acceptTransferModes( TransferMode.MOVE );
-				event.consume( );
-				}
-
-		} // onDragOver
 
 
 		@Override
@@ -394,8 +406,6 @@ public class MainController implements Initializable
 	{
 		Dialog dialog = getEditDialog( colorGene );
 		dialog.showAndWait( );
-
-		// LAM - Drag to reorder?
 
 	} // actEditColorGene
 
@@ -569,30 +579,12 @@ public class MainController implements Initializable
 	} // getFileChooser
 
 
-	private void handleListClick( MouseEvent event )
-	{
-		Object target = event.getTarget( );
-
-		if ( event.getClickCount( ) == 2 && target instanceof ColorGeneCell )
-			{
-			ColorGene gene = ( ( ColorGeneCell ) target ).getItem( );
-			if ( gene != null )
-				{
-				actEditColorGene( gene );
-				}
-			}
-
-	} // handleListClick
-
-
 	@Override
 	public void initialize( URL location, ResourceBundle resources )
 	{
 		fieldColorGenes.getSelectionModel( ).setSelectionMode( SelectionMode.MULTIPLE );
 		fieldColorGenes.setCellFactory( ( ignored ) -> new ColorGeneCell( ) );
 		fieldColorGenes.setFocusTraversable( false );
-
-		fieldColorGenes.setOnMouseClicked( this::handleListClick );
 
 		fieldMerleService = new MerleService( );
 		fieldMerleService.setCanvas( fieldCanvas );
