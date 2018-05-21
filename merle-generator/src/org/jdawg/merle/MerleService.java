@@ -33,6 +33,7 @@ public class MerleService extends Service<Void>
 	// Data members.
 	private Canvas fieldCanvas;
 	private List<ColorGene> fieldColorGenes;
+	private int fieldGenerationLimit = -1;
 
 
 	/**
@@ -160,6 +161,7 @@ public class MerleService extends Service<Void>
 		final Canvas canvas = Objects.requireNonNull( fieldCanvas );
 		final List<ColorGene> colorGenes = new ArrayList<>(
 				Objects.requireNonNull( fieldColorGenes ) );
+		final int generationLimit = fieldGenerationLimit;
 
 		Task<Void> task = new Task<Void>( )
 		{
@@ -221,6 +223,8 @@ public class MerleService extends Service<Void>
 							( ) -> drawUpdate( canvas, copy( pixelColors, width, height ) ) );
 
 					iteration++;
+					if ( generationLimit > 0 && iteration >= generationLimit )
+						break;
 					}
 
 				Platform.runLater( ( ) -> drawUpdate( canvas, pixelColors ) );
@@ -248,5 +252,17 @@ public class MerleService extends Service<Void>
 		fieldColorGenes = colorGenes;
 
 	} // setColorGenes
+
+
+	/**
+	 * @param generationLimit - a int to set as the generationLimit. This places a cap on
+	 *            the number of passes taken in rendering the image. Setting this
+	 *            {@code <= 0} will result in no cap.
+	 */
+	public void setGenerationLimit( int generationLimit )
+	{
+		fieldGenerationLimit = generationLimit;
+
+	} // setGenerationLimit
 
 }

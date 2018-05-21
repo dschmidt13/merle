@@ -6,10 +6,16 @@
 package org.jdawg.merle;
 
 import java.net.URL;
+import java.time.Instant;
+import java.util.List;
 import java.util.ResourceBundle;
+import java.util.TimerTask;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.jdawg.fxcontrol.NumericTextField;
+import org.jdawg.util.FXUtils;
 
+import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -17,6 +23,8 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Slider;
 import javafx.scene.control.TextField;
+import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 
 /**
@@ -28,10 +36,21 @@ public class ColorGeneEditorController implements Initializable
 {
 	// Private data members.
 	private ColorGene fieldGene;
+	private MerleService fieldPatternService;
+	private List<ColorGene> fieldServiceGenes;
+	private List<Color> fieldBasePaletteColors;
+	private List<Color> fieldRecentPaletteColors;
+	private TimerTask fieldLastPatternAutoRefreshTask;
 
 	// Injected FXML members.
 	@FXML
 	private TextField fieldName;
+
+	@FXML
+	private ImageView fieldPalette;
+
+	@FXML
+	private ImageView fieldRecentPalette;
 
 	@FXML
 	private Slider fieldRed;
@@ -58,7 +77,7 @@ public class ColorGeneEditorController implements Initializable
 	private NumericTextField fieldAlphaText;
 
 	@FXML
-	private Canvas fieldSample;
+	private Canvas fieldSampleColor;
 
 	@FXML
 	private Slider fieldConversionProbability;
@@ -78,21 +97,39 @@ public class ColorGeneEditorController implements Initializable
 	@FXML
 	private NumericTextField fieldSignalStrengthText;
 
+	@FXML
+	private Canvas fieldSamplePattern;
+
 
 	public void acceptChanges( )
 	{
 		// TODO - This should probably just look up the ColorGene in the list and replace
-		// it. Maybe we should be given the index when we start editing.
-		if ( fieldGene != null )
-			{
-			fieldGene.setName( fieldName.getText( ) );
-			fieldGene.setColor( getColor( ) );
-			fieldGene.setSeedConversionProb( fieldConversionProbability.getValue( ) );
-			fieldGene.setSignalStrength( fieldSignalStrength.getValue( ) );
-			fieldGene.setCoolingRate( fieldCoolingRate.getValue( ) );
-			}
+		// it. Maybe we should be given the index when we start editing. Or return a
+		// complete object and let the caller figure it out.
+		setParams( fieldGene );
+		fieldPatternService.cancel( );
 
 	} // acceptChanges
+
+
+	/**
+	 * Regenerates the sample pattern image.
+	 */
+	public void actRefreshSamplePattern( )
+	{
+		fieldServiceGenes.clear( );
+		fieldServiceGenes.add( paramsToColorGene( ) );
+
+		fieldPatternService.restart( );
+
+	} // actRefreshSamplePattern
+
+
+	public void destroy( )
+	{
+		fieldPatternService.cancel( );
+
+	} // destroy
 
 
 	private Color getColor( )
@@ -105,58 +142,118 @@ public class ColorGeneEditorController implements Initializable
 	} // getColor
 
 
+	public void handleCancel( ActionEvent event )
+	{
+		fieldPatternService.cancel( );
+
+	} // handleCancel
+
+
 	public void handleOk( ActionEvent event )
 	{
 		// Someday we might want to do validation or something here.
-
+		fieldPatternService.cancel( );
 		acceptChanges( );
 
 	} // handleOk
 
 
-	@Override
-	public void initialize( URL location, ResourceBundle resources )
+	private void handlePaletteClick( MouseEvent event )
 	{
-		// Initialize sliders & listeners.
-		initSliders( );
+		// TODO
 
-		// Set the UI defaults.
-		setColorGene( null );
-
-		// Draw the first color swatch.
-		redrawSample( );
-
-	} // initialize
+	} // handlePaletteClick
 
 
-	private void initSliders( )
+	private void initColorSliders( )
 	{
 		// Configure sample redraw listeners.
-		fieldRed.valueProperty( ).addListener( ( obs, old, nw ) -> redrawSample( ) );
-		fieldGreen.valueProperty( ).addListener( ( obs, old, nw ) -> redrawSample( ) );
-		fieldBlue.valueProperty( ).addListener( ( obs, old, nw ) -> redrawSample( ) );
-		fieldAlpha.valueProperty( ).addListener( ( obs, old, nw ) -> redrawSample( ) );
+		fieldRed.valueProperty( ).addListener( ( obs, old, nw ) -> redrawColorSample( ) );
+		fieldGreen.valueProperty( ).addListener( ( obs, old, nw ) -> redrawColorSample( ) );
+		fieldBlue.valueProperty( ).addListener( ( obs, old, nw ) -> redrawColorSample( ) );
+		fieldAlpha.valueProperty( ).addListener( ( obs, old, nw ) -> redrawColorSample( ) );
 
 		// Configure slider/text field bindings.
 		fieldRedText.setNumberProperty( fieldRed.valueProperty( ), 0 );
 		fieldGreenText.setNumberProperty( fieldGreen.valueProperty( ), 0 );
 		fieldBlueText.setNumberProperty( fieldBlue.valueProperty( ), 0 );
 		fieldAlphaText.setNumberProperty( fieldAlpha.valueProperty( ), 0 );
+
+	} // jiggleInitSliders
+
+
+	@Override
+	public void initialize( URL location, ResourceBundle resources )
+	{
+		// Initialize sliders & listeners.
+		initService( );
+		initPalettes( );
+		initColorSliders( );
+		initPatternSliders( );
+
+		// Set the UI defaults.
+		setColorGene( null );
+
+		// Draw the first color swatch.
+		redrawColorSample( );
+
+		// NOTE: Don't refresh the pattern right away, as we have no color to draw.
+
+	} // initialize
+
+
+	private void initPalettes( )
+	{
+		// TODO
+
+	} // initPalettes
+
+
+	private void initPatternSliders( )
+	{
 		fieldConversionProbabilityText
 				.setNumberProperty( fieldConversionProbability.valueProperty( ), 6 );
 		fieldCoolingRateText.setNumberProperty( fieldCoolingRate.valueProperty( ), 3 );
 		fieldSignalStrengthText.setNumberProperty( fieldSignalStrength.valueProperty( ), 2 );
 
-	} // jiggleInitSliders
+		fieldConversionProbability.valueProperty( ).addListener( this::triggerPatternRefresh );
+		fieldCoolingRate.valueProperty( ).addListener( this::triggerPatternRefresh );
+		fieldSignalStrength.valueProperty( ).addListener( this::triggerPatternRefresh );
+
+	} // initPatternSliders
 
 
-	private void redrawSample( )
+	private void initService( )
 	{
-		GraphicsContext gfx = fieldSample.getGraphicsContext2D( );
+		fieldPatternService = new MerleService( );
+
+		fieldPatternService.setCanvas( fieldSamplePattern );
+
+		fieldServiceGenes = new CopyOnWriteArrayList<>( );
+		fieldPatternService.setColorGenes( fieldServiceGenes );
+
+		fieldPatternService.setGenerationLimit( 5 );
+
+	} // initService
+
+
+	private ColorGene paramsToColorGene( )
+	{
+		ColorGene gene = new ColorGene( );
+		setParams( gene );
+
+		return gene;
+
+	} // paramsToColorGene
+
+
+	private void redrawColorSample( )
+	{
+		GraphicsContext gfx = fieldSampleColor.getGraphicsContext2D( );
 		gfx.setFill( Color.WHITE );
-		gfx.fillRect( 0, 0, fieldSample.getWidth( ), fieldSample.getHeight( ) );
+		gfx.fillRect( 0, 0, fieldSampleColor.getWidth( ), fieldSampleColor.getHeight( ) );
 		gfx.setFill( getColor( ) );
-		gfx.fillRect( 0, 0, fieldSample.getWidth( ), fieldSample.getHeight( ) );
+		gfx.fillRect( 0, 0, fieldSampleColor.getWidth( ), fieldSampleColor.getHeight( ) );
 
 	} // redrawSample
 
@@ -189,5 +286,36 @@ public class ColorGeneEditorController implements Initializable
 			}
 
 	} // setColorGene
+
+
+	private void setParams( ColorGene gene )
+	{
+		if ( gene != null )
+			{
+			gene.setName( fieldName.getText( ) );
+			gene.setColor( getColor( ) );
+			gene.setSeedConversionProb( fieldConversionProbability.getValue( ) );
+			gene.setSignalStrength( fieldSignalStrength.getValue( ) );
+			gene.setCoolingRate( fieldCoolingRate.getValue( ) );
+			}
+
+	} // setParams
+
+
+	private void triggerPatternRefresh( ObservableValue<? extends Number> observable,
+			Number oldValue, Number newValue )
+	{
+		// Doesn't matter if this succeeds; what matter is that we try, and we reduce
+		// service overhead on a best-effort basis.
+		if ( fieldLastPatternAutoRefreshTask != null )
+			fieldLastPatternAutoRefreshTask.cancel( );
+
+		// Refresh in 100ms unless someone cancels it with a newer auto-refresh before
+		// then. (In short: Don't begin to refresh the pattern until we've been idle for
+		// 100ms. This keeps the sliders from overwhelming us with cancelled rendering.)
+		fieldLastPatternAutoRefreshTask = FXUtils.runLaterScheduled( this::actRefreshSamplePattern,
+				Instant.now( ).plusMillis( 100 ) );
+
+	} // triggerPatternRefresh
 
 }

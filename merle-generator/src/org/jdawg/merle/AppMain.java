@@ -19,6 +19,9 @@ public class AppMain extends Application
 	private static final URL MAIN_UI_FXML_DOC = AppMain.class.getResource( "Main.fxml" );
 	private static final String WINDOW_TITLE = "Merle Generator";
 
+	// Data members.
+	private MainController fieldMainController;
+
 
 	public static void main( String[ ] args )
 	{
@@ -34,6 +37,7 @@ public class AppMain extends Application
 			{
 			FXMLLoader loader = new FXMLLoader( MAIN_UI_FXML_DOC );
 			Parent uiRoot = loader.load( );
+			fieldMainController = loader.getController( );
 
 			Scene scene = new Scene( uiRoot );
 			primaryStage.setScene( scene );
@@ -48,5 +52,27 @@ public class AppMain extends Application
 			}
 
 	} // start
+
+
+	@Override
+	public void stop( )
+			throws Exception
+	{
+		if ( fieldMainController != null )
+			{
+			try
+				{
+				fieldMainController.destroy( );
+				}
+			catch ( Exception exception )
+				{
+				// TODO Auto-generated catch block
+				exception.printStackTrace( );
+				}
+			}
+
+		super.stop( );
+
+	} // stop
 
 }

@@ -23,11 +23,11 @@ import javafx.scene.paint.Color;
 public class ColorGene
 {
 	// Data members.
-	private StringProperty name = new SimpleStringProperty( "Black" );
-	private ObjectProperty<Color> color = new SimpleObjectProperty<>( Color.BLACK );
-	private DoubleProperty seedConversionProb = new SimpleDoubleProperty( 0.15 );
-	private DoubleProperty coolingRate = new SimpleDoubleProperty( 0.2 );
-	private DoubleProperty signalStrength = new SimpleDoubleProperty( 50 );
+	private StringProperty name = new SimpleStringProperty( );
+	private ObjectProperty<Color> color = new SimpleObjectProperty<>( );
+	private DoubleProperty seedConversionProb = new SimpleDoubleProperty( );
+	private DoubleProperty coolingRate = new SimpleDoubleProperty( );
+	private DoubleProperty signalStrength = new SimpleDoubleProperty( );
 
 
 	public ColorGene( )

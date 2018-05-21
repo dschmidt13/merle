@@ -45,6 +45,7 @@ import javafx.scene.input.Dragboard;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
+import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Modality;
@@ -263,7 +264,7 @@ public class MainController implements Initializable
 
 	public void actAddColorGene( )
 	{
-		ColorGene gene = new ColorGene( );
+		ColorGene gene = createDefaultColorGene( );
 		if ( editColorGene( gene ) )
 			fieldColorGenes.getItems( ).add( gene );
 
@@ -391,6 +392,32 @@ public class MainController implements Initializable
 	} // compositePattern
 
 
+	private ColorGene createDefaultColorGene( )
+	{
+		ColorGene gene = new ColorGene( );
+
+		gene.setName( "Black" );
+		gene.setColor( Color.BLACK );
+		gene.setCoolingRate( 0.333 );
+		gene.setSeedConversionProb( 0.0001 );
+		gene.setSignalStrength( 50 );
+
+		return gene;
+
+	} // createDefaultColorGene
+
+
+	public void destroy( )
+	{
+		// Get subcontrollers to clean up their messes.
+		fieldEditorController.destroy( );
+
+		// Clean up our own messes.
+		fieldMerleService.cancel( );
+
+	} // destroy
+
+
 	private boolean editColorGene( ColorGene colorGene )
 	{
 		boolean saved = false;
@@ -449,6 +476,8 @@ public class MainController implements Initializable
 				// Dialog validation Javadoc note.
 				Button okBtn = ( Button ) pane.lookupButton( ButtonType.OK );
 				okBtn.addEventFilter( ActionEvent.ACTION, fieldEditorController::handleOk );
+				Button cancelBtn = ( Button ) pane.lookupButton( ButtonType.CANCEL );
+				cancelBtn.addEventFilter( ActionEvent.ACTION, fieldEditorController::handleCancel );
 
 				// Lets the caller know whether the user accepted the changes.
 				fieldEditDialog
