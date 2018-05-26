@@ -32,7 +32,7 @@
                         <Label text="Palette:" />
                         <HBox alignment="CENTER">
                            <children>
-                              <ImageView fx:id="fieldPalette" fitHeight="54.0" fitWidth="198.0" pickOnBounds="true" preserveRatio="true">
+                              <ImageView fx:id="fieldPalette" fitHeight="91.0" fitWidth="198.0" pickOnBounds="true" preserveRatio="true">
                                  <cursor>
                                     <Cursor fx:constant="CROSSHAIR" />
                                  </cursor>
