@@ -232,6 +232,24 @@ public class MainController implements Initializable
 
 	} // class ColorGeneCell
 
+	/**
+	 * Pure red opaque pixels in the base image are mapped with coat color pixels from the
+	 * generated pattern.
+	 */
+	private static final int BASE_COLOR_COAT = ( 255 << 24 ) | ( 255 << 16 );
+
+	/**
+	 * Pure blue opaque pixels in the base image are mapped with eye color pixels from the
+	 * designated eye color.
+	 */
+	private static final int BASE_COLOR_EYES = ( 255 << 24 ) | ( 255 );
+
+	/**
+	 * Pure green opaque pixels in the base image are mapped with nose color pixels from
+	 * the designated nose color.
+	 */
+	private static final int BASE_COLOR_NOSE = ( 255 << 24 ) | ( 255 << 8 );
+
 	private static final URL EDITOR_FXML_URL = MainController.class
 			.getResource( "ColorGeneEditor.fxml" );
 
@@ -260,6 +278,28 @@ public class MainController implements Initializable
 	public MainController( )
 	{
 	} // MainController
+
+
+	public static int colorToPackedInt( Color color )
+	{
+		if ( color == null )
+			throw new NullPointerException( "Cannot represent a null color as a packed int." );
+
+		// Get normalized color values and scale to bytes.
+		int alpha = ( int ) Math.round( 255 * color.getOpacity( ) );
+		int red = ( int ) Math.round( 255 * color.getRed( ) );
+		int green = ( int ) Math.round( 255 * color.getGreen( ) );
+		int blue = ( int ) Math.round( 255 * color.getBlue( ) );
+
+		// Shift to prepare for packing. Blue shifts by 0 (i.e., it does not shift).
+		alpha <<= 24;
+		red <<= 16;
+		green <<= 8;
+
+		// Pack and return.
+		return ( alpha | red | green | blue );
+
+	} // colorToPackedInt
 
 
 	public void actAddColorGene( )
@@ -364,17 +404,36 @@ public class MainController implements Initializable
 		// int baseOffsetY = ( int ) Math
 		// .round( ( pattern.getHeight( ) - dogBase.getHeight( ) ) / 2.0 );
 
+		// Get the eye and nose fill colors.
+		int eyeColorRGB = colorToPackedInt( getEyeColor( ) );
+		int noseColorRGB = colorToPackedInt( getNoseColor( ) );
+
 		// Copy pixels from the Canvas's image to BG where base is red.
-		int sRGBRed = ( 255 << 24 ) | ( 255 << 16 );
+		int basePixel;
 		for ( int yIdx = 0; yIdx < baseHeight; yIdx++ )
 			{
 			for ( int xIdx = 0; xIdx < baseWidth; xIdx++ )
 				{
 				// Get base pixel colors and check against red with full alpha.
-				if ( dogBase.getRGB( xIdx, yIdx ) == sRGBRed )
+				basePixel = dogBase.getRGB( xIdx, yIdx );
+				switch ( basePixel )
 					{
-					// Copy from pattern to background at this pixel location.
-					background.setRGB( xIdx, yIdx, pattern.getRGB( xIdx, yIdx ) );
+					case BASE_COLOR_COAT :
+						// Copy from pattern to background at this pixel location.
+						background.setRGB( xIdx, yIdx, pattern.getRGB( xIdx, yIdx ) );
+						break;
+
+					case BASE_COLOR_EYES :
+						background.setRGB( xIdx, yIdx, eyeColorRGB );
+						break;
+
+					case BASE_COLOR_NOSE :
+						background.setRGB( xIdx, yIdx, noseColorRGB );
+						break;
+
+					default :
+						// Don't draw if we don't recognize it.
+						break;
 					}
 				}
 			}
@@ -497,6 +556,14 @@ public class MainController implements Initializable
 	} // getEditDialog
 
 
+	private Color getEyeColor( )
+	{
+		return ( fieldColorGenes.getItems( ).isEmpty( ) ? Color.BLACK
+				: fieldColorGenes.getItems( ).get( 0 ).getColor( ) );
+
+	} // getEyeColor
+
+
 	private FileChooser getFileChooser( )
 	{
 		if ( fieldFileChooser == null )
@@ -512,6 +579,14 @@ public class MainController implements Initializable
 		return fieldFileChooser;
 
 	} // getFileChooser
+
+
+	private Color getNoseColor( )
+	{
+		return ( fieldColorGenes.getItems( ).size( ) > 1
+				? fieldColorGenes.getItems( ).get( 1 ).getColor( ) : getEyeColor( ) );
+
+	} // getNoseColor
 
 
 	private void handleGeneListClick( MouseEvent event )
