@@ -9,18 +9,20 @@ import java.net.URL;
 import java.time.Instant;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Deque;
 import java.util.HashSet;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.TimerTask;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.jdawg.fxcontrol.NumericTextField;
 import org.jdawg.util.FXUtils;
 
 import javafx.beans.value.ObservableValue;
+import javafx.concurrent.Worker.State;
+import javafx.concurrent.WorkerStateEvent;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -54,7 +56,6 @@ public class ColorGeneEditorController implements Initializable
 	// Private data members.
 	private ColorGene fieldGene;
 	private MerleService fieldPatternService;
-	private List<ColorGene> fieldServiceGenes;
 	private TimerTask fieldLastPatternAutoRefreshTask;
 	private List<Color> fieldBasePaletteColors;
 	private Deque<Color> fieldRecentPaletteColors;
@@ -134,14 +135,10 @@ public class ColorGeneEditorController implements Initializable
 	 */
 	public void actRefreshSamplePattern( )
 	{
-		// TODO - Calculate whether a dark or light background would be more appropriate
-		// for the current color, and set it into the service. How about: more than one
-		// value above 75%? Dark background. Otherwise, light background. Consider alpha
-		// somehow as well.
-
-		fieldServiceGenes.clear( );
-		fieldServiceGenes.add( paramsToColorGene( ) );
-
+		// Calculate whether a dark or light background would be more appropriate
+		// for the current color, and set it into the service.
+		fieldPatternService.setBaseColor( choosePatternBackground( ) );
+		fieldPatternService.setColorGenes( Arrays.asList( paramsToColorGene( ) ) );
 		fieldPatternService.restart( );
 
 	} // actRefreshSamplePattern
@@ -161,6 +158,23 @@ public class ColorGeneEditorController implements Initializable
 			}
 
 	} // addRecentPaletteColor
+
+
+	private Color choosePatternBackground( )
+	{
+		final int LIGHT_THRESHOLD = 255 * 3 / 4;
+
+		int lightCount = 0;
+		if ( fieldRed.getValue( ) > LIGHT_THRESHOLD )
+			lightCount++;
+		if ( fieldGreen.getValue( ) > LIGHT_THRESHOLD )
+			lightCount++;
+		if ( fieldBlue.getValue( ) > LIGHT_THRESHOLD )
+			lightCount++;
+
+		return ( lightCount > 1 ? Color.BLACK : Color.WHITE );
+
+	} // choosePatternBackground
 
 
 	public void destroy( )
@@ -296,13 +310,10 @@ public class ColorGeneEditorController implements Initializable
 	private void initService( )
 	{
 		fieldPatternService = new MerleService( );
-
-		fieldPatternService.setCanvas( fieldSamplePattern );
-
-		fieldServiceGenes = new CopyOnWriteArrayList<>( );
-		fieldPatternService.setColorGenes( fieldServiceGenes );
-
+		fieldPatternService.setWidth( ( int ) fieldSamplePattern.getWidth( ) );
+		fieldPatternService.setHeight( ( int ) fieldSamplePattern.getHeight( ) );
 		fieldPatternService.setGenerationLimit( 5 );
+		fieldPatternService.setOnSucceeded( this::redrawPattern );
 
 	} // initService
 
@@ -326,6 +337,25 @@ public class ColorGeneEditorController implements Initializable
 		gfx.fillRect( 0, 0, fieldSampleColor.getWidth( ), fieldSampleColor.getHeight( ) );
 
 	} // redrawSample
+
+
+	private void redrawPattern( WorkerStateEvent event )
+	{
+		if ( event != null && event.getSource( ).getState( ) == State.SUCCEEDED )
+			{
+			Object resultObj = event.getSource( ).getValue( );
+			if ( resultObj instanceof GenerateCoatResult )
+				{
+				GenerateCoatResult result = ( GenerateCoatResult ) resultObj;
+				Image image = result.getCoatPattern( );
+				if ( image != null )
+					{
+					fieldSamplePattern.getGraphicsContext2D( ).drawImage( image, 0, 0 );
+					}
+				}
+			}
+
+	} // redrawPattern
 
 
 	private void redrawRecentPalette( )

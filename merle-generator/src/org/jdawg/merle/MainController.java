@@ -37,6 +37,7 @@ import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.SelectionMode;
+import javafx.scene.image.Image;
 import javafx.scene.image.WritableImage;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
@@ -370,7 +371,7 @@ public class MainController implements Initializable
 	} // actSave
 
 
-	private void compositePattern( )
+	private void compositePattern( Image coatPattern )
 			throws IOException
 	{
 		// TODO - Break this up a bit.
@@ -392,8 +393,7 @@ public class MainController implements Initializable
 		int bgOffsetY = 0;
 
 		// Get the Canvas's pattern image.
-		BufferedImage pattern = SwingFXUtils.fromFXImage( fieldCanvas.snapshot( null, null ),
-				null );
+		BufferedImage swingPattern = SwingFXUtils.fromFXImage( coatPattern, null );
 
 		int baseOffsetX = 0;
 		int baseOffsetY = 0;
@@ -420,7 +420,7 @@ public class MainController implements Initializable
 					{
 					case BASE_COLOR_COAT :
 						// Copy from pattern to background at this pixel location.
-						background.setRGB( xIdx, yIdx, pattern.getRGB( xIdx, yIdx ) );
+						background.setRGB( xIdx, yIdx, swingPattern.getRGB( xIdx, yIdx ) );
 						break;
 
 					case BASE_COLOR_EYES :
@@ -625,7 +625,8 @@ public class MainController implements Initializable
 		fieldColorGenes.setOnKeyPressed( this::handleGeneListKeyPressed );
 
 		fieldMerleService = new MerleService( );
-		fieldMerleService.setCanvas( fieldCanvas );
+		fieldMerleService.setWidth( ( int ) fieldCanvas.getWidth( ) );
+		fieldMerleService.setHeight( ( int ) fieldCanvas.getHeight( ) );
 		fieldMerleService.setColorGenes( fieldColorGenes.getItems( ) );
 		fieldMerleService.setOnRunning( this::onSvcStart );
 		fieldMerleService.setOnCancelled( this::onSvcEnd );
@@ -678,7 +679,7 @@ public class MainController implements Initializable
 		fieldProgressBar.setVisible( false );
 		try
 			{
-			compositePattern( );
+			compositePattern( fieldMerleService.getValue( ).getCoatPattern( ) );
 			}
 		catch ( IOException exception )
 			{
