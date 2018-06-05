@@ -1,5 +1,5 @@
 /*
- * MerleService.java
+ * GenerateCoatService.java
  * 
  * Created on May 16, 2018
  */
@@ -12,11 +12,11 @@ import javafx.concurrent.Task;
 import javafx.scene.paint.Color;
 
 /**
- * MerleService
+ * GenerateCoatService
  * 
  * @author David Schmidt (dschmidt13@gmail.com)
  */
-public class MerleService extends Service<GenerateCoatProgress>
+public class GenerateCoatService extends Service<GenerateCoatProgress>
 {
 	// Data members.
 	private String fieldAlgorithm;
@@ -29,11 +29,11 @@ public class MerleService extends Service<GenerateCoatProgress>
 
 
 	/**
-	 * MerleService constructor.
+	 * GenerateCoatService constructor.
 	 */
-	public MerleService( )
+	public GenerateCoatService( )
 	{
-	} // MerleService
+	} // GenerateCoatService
 
 
 	@Override

@@ -260,7 +260,7 @@ public class MainController implements Initializable
 	private ColorGeneEditorController fieldEditorController;
 
 	// Background service.
-	private MerleService fieldMerleService;
+	private GenerateCoatService fieldGenerateCoatService;
 
 	// Injected FXML members.
 	@FXML
@@ -314,7 +314,7 @@ public class MainController implements Initializable
 
 	public void actCancel( )
 	{
-		fieldMerleService.cancel( );
+		fieldGenerateCoatService.cancel( );
 
 	} // actCancel
 
@@ -334,7 +334,7 @@ public class MainController implements Initializable
 	public void actGenerate( )
 	{
 		if ( !fieldColorGenes.getItems( ).isEmpty( ) )
-			fieldMerleService.restart( );
+			fieldGenerateCoatService.restart( );
 
 	} // actGenerate
 
@@ -472,7 +472,7 @@ public class MainController implements Initializable
 		fieldEditorController.destroy( );
 
 		// Clean up our own messes.
-		fieldMerleService.cancel( );
+		fieldGenerateCoatService.cancel( );
 
 	} // destroy
 
@@ -624,20 +624,20 @@ public class MainController implements Initializable
 		fieldColorGenes.setOnMouseClicked( this::handleGeneListClick );
 		fieldColorGenes.setOnKeyPressed( this::handleGeneListKeyPressed );
 
-		fieldMerleService = new MerleService( );
+		fieldGenerateCoatService = new GenerateCoatService( );
 		// TODO - Make service algorithm dynamic with UI.
-		fieldMerleService.setAlgorithm(
+		fieldGenerateCoatService.setAlgorithm(
 				GenerateCoatTaskBuilderFactory.getSupportedAlgorithms( ).iterator( ).next( ) );
-		fieldMerleService.setWidth( ( int ) fieldCanvas.getWidth( ) );
-		fieldMerleService.setHeight( ( int ) fieldCanvas.getHeight( ) );
-		fieldMerleService.setColorGenes( fieldColorGenes.getItems( ) );
+		fieldGenerateCoatService.setWidth( ( int ) fieldCanvas.getWidth( ) );
+		fieldGenerateCoatService.setHeight( ( int ) fieldCanvas.getHeight( ) );
+		fieldGenerateCoatService.setColorGenes( fieldColorGenes.getItems( ) );
 		// TODO - Make random seed dynamic with UI.
-		fieldMerleService.setRandomSeed( null );
-		fieldMerleService.setOnRunning( this::onSvcStart );
-		fieldMerleService.setOnCancelled( this::onSvcEnd );
-		fieldMerleService.setOnSucceeded( this::onSvcSuccess );
-		fieldMerleService.setOnFailed( this::onSvcFail );
-		fieldMerleService.progressProperty( ).addListener( this::onSvcProgress );
+		fieldGenerateCoatService.setRandomSeed( null );
+		fieldGenerateCoatService.setOnRunning( this::onSvcStart );
+		fieldGenerateCoatService.setOnCancelled( this::onSvcEnd );
+		fieldGenerateCoatService.setOnSucceeded( this::onSvcSuccess );
+		fieldGenerateCoatService.setOnFailed( this::onSvcFail );
+		fieldGenerateCoatService.progressProperty( ).addListener( this::onSvcProgress );
 
 		// Additional background init.
 		Platform.runLater( ( ) -> {
@@ -666,7 +666,7 @@ public class MainController implements Initializable
 	private void onSvcProgress( ObservableValue<? extends Number> observable, Number oldValue,
 			Number newValue )
 	{
-		fieldProgressBar.setProgress( fieldMerleService.getProgress( ) );
+		fieldProgressBar.setProgress( fieldGenerateCoatService.getProgress( ) );
 
 	} // onSvcProgress
 
@@ -684,7 +684,7 @@ public class MainController implements Initializable
 		fieldProgressBar.setVisible( false );
 		try
 			{
-			compositePattern( fieldMerleService.getValue( ).getCoatPattern( ) );
+			compositePattern( fieldGenerateCoatService.getValue( ).getCoatPattern( ) );
 			}
 		catch ( IOException exception )
 			{

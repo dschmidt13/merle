@@ -55,7 +55,7 @@ public class ColorGeneEditorController implements Initializable
 
 	// Private data members.
 	private ColorGene fieldGene;
-	private MerleService fieldPatternService;
+	private GenerateCoatService fieldPatternService;
 	private TimerTask fieldLastPatternAutoRefreshTask;
 	private List<Color> fieldBasePaletteColors;
 	private Deque<Color> fieldRecentPaletteColors;
@@ -309,7 +309,7 @@ public class ColorGeneEditorController implements Initializable
 
 	private void initService( )
 	{
-		fieldPatternService = new MerleService( );
+		fieldPatternService = new GenerateCoatService( );
 		fieldPatternService.setWidth( ( int ) fieldSamplePattern.getWidth( ) );
 		fieldPatternService.setHeight( ( int ) fieldSamplePattern.getHeight( ) );
 		fieldPatternService.setIterationLimit( 5 );
