@@ -5,9 +5,7 @@
  */
 package org.jdawg.merle;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
@@ -18,11 +16,12 @@ import javafx.scene.paint.Color;
  * 
  * @author David Schmidt (dschmidt13@gmail.com)
  */
-public class MerleService extends Service<GenerateCoatResult>
+public class MerleService extends Service<GenerateCoatProgress>
 {
 	// Data members.
+	private String fieldAlgorithm;
 	private List<ColorGene> fieldColorGenes;
-	private int fieldGenerationLimit = -1;
+	private int fieldIterationLimit = -1;
 	private int fieldWidth;
 	private int fieldHeight;
 	private Long fieldRandomSeed;
@@ -38,31 +37,35 @@ public class MerleService extends Service<GenerateCoatResult>
 
 
 	@Override
-	protected Task<GenerateCoatResult> createTask( )
+	protected Task<GenerateCoatProgress> createTask( )
 	{
-		final List<ColorGene> colorGenes = new ArrayList<>(
-				Objects.requireNonNull( fieldColorGenes ) );
-		final int generationLimit = fieldGenerationLimit;
-		final int width = fieldWidth;
-		final int height = fieldHeight;
-		final Color baseColor = ( fieldBaseColor == null ? Color.WHITE : fieldBaseColor );
+		AbstractGenerateCoatTaskBuilder builder = GenerateCoatTaskBuilderFactory
+				.createBuilder( fieldAlgorithm );
 
-		// TODO - Allow different task implementations to be used.
-		Task<GenerateCoatResult> task;
-		if ( fieldRandomSeed == null )
+		if ( builder == null )
 			{
-			task = new MerleGenerateCoatTask( new ArrayList<>( colorGenes ), width, height,
-					baseColor, generationLimit );
-			}
-		else
-			{
-			task = new MerleGenerateCoatTask( new ArrayList<>( colorGenes ), width, height,
-					baseColor, generationLimit, fieldRandomSeed.longValue( ) );
+			throw new NullPointerException(
+					"Could not instantiate an AbstractGenerateCoatTaskBuilder; the algorithm name '"
+							+ fieldAlgorithm + "' is missing or not recognized." );
 			}
 
-		return task;
+		builder.width( fieldWidth ).height( fieldHeight ).colorGenes( fieldColorGenes )
+				.baseColor( fieldBaseColor ).iterationLimit( fieldIterationLimit )
+				.randomSeed( fieldRandomSeed );
+
+		return builder.build( );
 
 	} // createTask
+
+
+	/**
+	 * @param algorithm - a String to set as the fieldAlgorithm
+	 */
+	public void setAlgorithm( String algorithm )
+	{
+		fieldAlgorithm = algorithm;
+
+	} // setAlgorithm
 
 
 	/**
@@ -83,18 +86,6 @@ public class MerleService extends Service<GenerateCoatResult>
 
 
 	/**
-	 * @param generationLimit - a int to set as the generationLimit. This places a cap on
-	 *            the number of passes taken in rendering the image. Setting this
-	 *            {@code <= 0} will result in no cap.
-	 */
-	public void setGenerationLimit( int generationLimit )
-	{
-		fieldGenerationLimit = generationLimit;
-
-	} // setGenerationLimit
-
-
-	/**
 	 * @param height - a int to set as the fieldHeight
 	 */
 	public void setHeight( int height )
@@ -102,6 +93,19 @@ public class MerleService extends Service<GenerateCoatResult>
 		fieldHeight = height;
 
 	} // setHeight
+
+
+	/**
+	 * @param iterationLimit - a int to set as the iterationLimit. This places a cap on
+	 *            the number of overall passes taken in rendering the image. Specific
+	 *            interpretation depends on the rendering implementation. Setting this
+	 *            {@code <= 0} will typically result in no cap.
+	 */
+	public void setIterationLimit( int iterationLimit )
+	{
+		fieldIterationLimit = iterationLimit;
+
+	} // setIterationLimit
 
 
 	/**

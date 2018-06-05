@@ -625,9 +625,14 @@ public class MainController implements Initializable
 		fieldColorGenes.setOnKeyPressed( this::handleGeneListKeyPressed );
 
 		fieldMerleService = new MerleService( );
+		// TODO - Make service algorithm dynamic with UI.
+		fieldMerleService.setAlgorithm(
+				GenerateCoatTaskBuilderFactory.getSupportedAlgorithms( ).iterator( ).next( ) );
 		fieldMerleService.setWidth( ( int ) fieldCanvas.getWidth( ) );
 		fieldMerleService.setHeight( ( int ) fieldCanvas.getHeight( ) );
 		fieldMerleService.setColorGenes( fieldColorGenes.getItems( ) );
+		// TODO - Make random seed dynamic with UI.
+		fieldMerleService.setRandomSeed( null );
 		fieldMerleService.setOnRunning( this::onSvcStart );
 		fieldMerleService.setOnCancelled( this::onSvcEnd );
 		fieldMerleService.setOnSucceeded( this::onSvcSuccess );

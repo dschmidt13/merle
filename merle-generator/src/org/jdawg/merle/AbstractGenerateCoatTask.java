@@ -18,7 +18,7 @@ import javafx.scene.paint.Color;
  * 
  * @author David Schmidt (dschmidt13@gmail.com)
  */
-public abstract class AbstractGenerateCoatTask extends Task<GenerateCoatResult>
+public abstract class AbstractGenerateCoatTask extends Task<GenerateCoatProgress>
 {
 	// Data members.
 	private List<ColorGene> fieldColorGenes;
@@ -32,51 +32,8 @@ public abstract class AbstractGenerateCoatTask extends Task<GenerateCoatResult>
 	/**
 	 * AbstractGenerateCoatTask constructor.
 	 */
-	public AbstractGenerateCoatTask( List<ColorGene> colorGenes, int width, int height )
+	protected AbstractGenerateCoatTask( )
 	{
-		fieldColorGenes = colorGenes;
-		fieldWidth = width;
-		fieldHeight = height;
-
-	} // AbstractGenerateCoatTask
-
-
-	/**
-	 * AbstractGenerateCoatTask constructor.
-	 */
-	public AbstractGenerateCoatTask( List<ColorGene> colorGenes, int width, int height,
-			Color baseColor )
-	{
-		this( colorGenes, width, height );
-
-		fieldBaseColor = ( baseColor == null ? Color.WHITE : baseColor );
-
-	} // AbstractGenerateCoatTask
-
-
-	/**
-	 * AbstractGenerateCoatTask constructor.
-	 */
-	public AbstractGenerateCoatTask( List<ColorGene> colorGenes, int width, int height,
-			Color baseColor, int passLimit )
-	{
-		this( colorGenes, width, height, baseColor );
-
-		fieldPassLimit = passLimit;
-
-	} // AbstractGenerateCoatTask
-
-
-	/**
-	 * AbstractGenerateCoatTask constructor.
-	 */
-	public AbstractGenerateCoatTask( List<ColorGene> colorGenes, int width, int height,
-			Color baseColor, int passLimit, long randomSeed )
-	{
-		this( colorGenes, width, height, baseColor, passLimit );
-
-		fieldRandom = new Random( randomSeed );
-
 	} // AbstractGenerateCoatTask
 
 
@@ -168,5 +125,47 @@ public abstract class AbstractGenerateCoatTask extends Task<GenerateCoatResult>
 		return fieldWidth;
 
 	} // getWidth
+
+
+	void setBaseColor( Color baseColor )
+	{
+		fieldBaseColor = baseColor;
+
+	} // setBaseColor
+
+
+	void setColorGenes( List<ColorGene> colorGenes )
+	{
+		fieldColorGenes = colorGenes;
+
+	} // setColorGenes
+
+
+	void setHeight( int height )
+	{
+		fieldHeight = height;
+
+	} // setHeight
+
+
+	void setPassLimit( int passLimit )
+	{
+		fieldPassLimit = passLimit;
+
+	} // setPassLimit
+
+
+	void setRandom( Random random )
+	{
+		fieldRandom = random;
+
+	} // setRandom
+
+
+	void setWidth( int width )
+	{
+		fieldWidth = width;
+
+	} // setWidth
 
 }

@@ -312,7 +312,10 @@ public class ColorGeneEditorController implements Initializable
 		fieldPatternService = new MerleService( );
 		fieldPatternService.setWidth( ( int ) fieldSamplePattern.getWidth( ) );
 		fieldPatternService.setHeight( ( int ) fieldSamplePattern.getHeight( ) );
-		fieldPatternService.setGenerationLimit( 5 );
+		fieldPatternService.setIterationLimit( 5 );
+		// TODO - Make sample pattern algorithm dynamic with UI.
+		fieldPatternService.setAlgorithm(
+				GenerateCoatTaskBuilderFactory.getSupportedAlgorithms( ).iterator( ).next( ) );
 		fieldPatternService.setOnSucceeded( this::redrawPattern );
 
 	} // initService
@@ -344,9 +347,9 @@ public class ColorGeneEditorController implements Initializable
 		if ( event != null && event.getSource( ).getState( ) == State.SUCCEEDED )
 			{
 			Object resultObj = event.getSource( ).getValue( );
-			if ( resultObj instanceof GenerateCoatResult )
+			if ( resultObj instanceof GenerateCoatProgress )
 				{
-				GenerateCoatResult result = ( GenerateCoatResult ) resultObj;
+				GenerateCoatProgress result = ( GenerateCoatProgress ) resultObj;
 				Image image = result.getCoatPattern( );
 				if ( image != null )
 					{

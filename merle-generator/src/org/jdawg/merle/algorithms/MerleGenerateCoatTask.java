@@ -3,7 +3,7 @@
  * 
  * Created on Jun 4, 2018
  */
-package org.jdawg.merle;
+package org.jdawg.merle.algorithms;
 
 import java.awt.Point;
 import java.util.ArrayList;
@@ -11,6 +11,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+
+import org.jdawg.merle.AbstractGenerateCoatTask;
+import org.jdawg.merle.AbstractGenerateCoatTaskBuilder;
+import org.jdawg.merle.ColorGene;
+import org.jdawg.merle.ColorPoint;
+import org.jdawg.merle.GenerateCoatProgress;
 
 import javafx.scene.image.WritableImage;
 import javafx.scene.paint.Color;
@@ -22,6 +28,30 @@ import javafx.scene.paint.Color;
  */
 public class MerleGenerateCoatTask extends AbstractGenerateCoatTask
 {
+	/**
+	 * Builds an instance of MerleGenerateCoatTask.
+	 * 
+	 * @author David Schmidt (dschmidt13@gmail.com)
+	 */
+	public static class Builder extends AbstractGenerateCoatTaskBuilder
+	{
+		/**
+		 * Public constructor.
+		 */
+		public Builder( )
+		{
+		} // Builder
+
+
+		@Override
+		protected AbstractGenerateCoatTask createInstance( )
+		{
+			return new MerleGenerateCoatTask( );
+
+		} // createInstance
+
+	} // Builder
+
 	// Data members.
 	private Map<Point, ColorGene> fieldSeeds = new HashMap<>( );
 	private int fieldIteration = 0;
@@ -30,72 +60,15 @@ public class MerleGenerateCoatTask extends AbstractGenerateCoatTask
 
 
 	/**
-	 * MerleGenerateCoatTask constructor.
-	 * 
-	 * @param colorGenes
-	 * @param width
-	 * @param height
+	 * Private constructor. Instantiate via Builder.
 	 */
-	public MerleGenerateCoatTask( List<ColorGene> colorGenes, int width, int height )
+	private MerleGenerateCoatTask( )
 	{
-		super( colorGenes, width, height );
-
-	} // MerleGenerateCoatTask
-
-
-	/**
-	 * MerleGenerateCoatTask constructor.
-	 * 
-	 * @param colorGenes
-	 * @param width
-	 * @param height
-	 * @param baseColor
-	 */
-	public MerleGenerateCoatTask( List<ColorGene> colorGenes, int width, int height,
-			Color baseColor )
-	{
-		super( colorGenes, width, height, baseColor );
-
-	} // MerleGenerateCoatTask
-
-
-	/**
-	 * MerleGenerateCoatTask constructor.
-	 * 
-	 * @param colorGenes
-	 * @param width
-	 * @param height
-	 * @param baseColor
-	 * @param passLimit
-	 */
-	public MerleGenerateCoatTask( List<ColorGene> colorGenes, int width, int height,
-			Color baseColor, int passLimit )
-	{
-		super( colorGenes, width, height, baseColor, passLimit );
-
-	} // MerleGenerateCoatTask
-
-
-	/**
-	 * MerleGenerateCoatTask constructor.
-	 * 
-	 * @param colorGenes
-	 * @param width
-	 * @param height
-	 * @param baseColor
-	 * @param passLimit
-	 * @param randomSeed
-	 */
-	public MerleGenerateCoatTask( List<ColorGene> colorGenes, int width, int height,
-			Color baseColor, int passLimit, long randomSeed )
-	{
-		super( colorGenes, width, height, baseColor, passLimit, randomSeed );
-
 	} // MerleGenerateCoatTask
 
 
 	@Override
-	protected GenerateCoatResult call( )
+	protected GenerateCoatProgress call( )
 			throws Exception
 	{
 		long startTime = System.currentTimeMillis( );
@@ -224,13 +197,12 @@ public class MerleGenerateCoatTask extends AbstractGenerateCoatTask
 	} // degradeSignal
 
 
-	protected GenerateCoatResult getResult( long runTime )
+	protected GenerateCoatProgress getResult( long runTime )
 	{
-		GenerateCoatResult result = new GenerateCoatResult( );
+		GenerateCoatProgress result = new GenerateCoatProgress( );
 
-		result.setPassCount( fieldIteration );
+		result.setIterations( fieldIteration );
 		result.setCoatPattern( fieldImage );
-		result.setRunTimeMs( runTime );
 
 		return result;
 
