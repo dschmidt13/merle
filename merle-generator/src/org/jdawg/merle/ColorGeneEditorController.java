@@ -405,6 +405,13 @@ public class ColorGeneEditorController implements Initializable
 	} // scanBasePaletteColors
 
 
+	public void setAlgorithm( String algorithm )
+	{
+		fieldPatternService.setAlgorithm( algorithm );
+
+	} // setAlgorithm
+
+
 	private void setColor( Color color )
 	{
 		fieldRed.setValue( color.getRed( ) * 255.0 );

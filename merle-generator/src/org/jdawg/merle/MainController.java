@@ -31,6 +31,7 @@ import javafx.scene.Parent;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.DialogPane;
 import javafx.scene.control.ListCell;
@@ -272,6 +273,9 @@ public class MainController implements Initializable
 	@FXML
 	private ProgressBar fieldProgressBar;
 
+	@FXML
+	private ComboBox<String> fieldAlgorithmSelector;
+
 
 	/**
 	 * MainController constructor.
@@ -334,7 +338,10 @@ public class MainController implements Initializable
 	public void actGenerate( )
 	{
 		if ( !fieldColorGenes.getItems( ).isEmpty( ) )
+			{
+			updateServiceProperties( );
 			fieldGenerateCoatService.restart( );
+			}
 
 	} // actGenerate
 
@@ -589,6 +596,13 @@ public class MainController implements Initializable
 	} // getNoseColor
 
 
+	public String getSelectedAlgorithm( )
+	{
+		return fieldAlgorithmSelector.getSelectionModel( ).getSelectedItem( );
+
+	} // getSelectedAlgorithm
+
+
 	private void handleGeneListClick( MouseEvent event )
 	{
 		if ( event.getClickCount( ) == 2 )
@@ -619,25 +633,29 @@ public class MainController implements Initializable
 	@Override
 	public void initialize( URL location, ResourceBundle resources )
 	{
+		// Initialize the ColorGenes list.
 		fieldColorGenes.getSelectionModel( ).setSelectionMode( SelectionMode.MULTIPLE );
 		fieldColorGenes.setCellFactory( ( ignored ) -> new ColorGeneCell( ) );
 		fieldColorGenes.setOnMouseClicked( this::handleGeneListClick );
 		fieldColorGenes.setOnKeyPressed( this::handleGeneListKeyPressed );
 
+		// Initialize the algorithm selector.
+		fieldAlgorithmSelector.getItems( )
+				.addAll( GenerateCoatTaskBuilderFactory.getSupportedAlgorithms( ) );
+		fieldAlgorithmSelector.getSelectionModel( ).select( 0 );
+		fieldAlgorithmSelector.getSelectionModel( ).selectedItemProperty( )
+				.addListener( ( obs, old, nw ) -> {
+				if ( fieldEditorController != null )
+					fieldEditorController.setAlgorithm( nw );
+				} );
+
 		fieldGenerateCoatService = new GenerateCoatService( );
-		// TODO - Make service algorithm dynamic with UI.
-		fieldGenerateCoatService.setAlgorithm(
-				GenerateCoatTaskBuilderFactory.getSupportedAlgorithms( ).iterator( ).next( ) );
-		fieldGenerateCoatService.setWidth( ( int ) fieldCanvas.getWidth( ) );
-		fieldGenerateCoatService.setHeight( ( int ) fieldCanvas.getHeight( ) );
-		fieldGenerateCoatService.setColorGenes( fieldColorGenes.getItems( ) );
-		// TODO - Make random seed dynamic with UI.
-		fieldGenerateCoatService.setRandomSeed( null );
 		fieldGenerateCoatService.setOnRunning( this::onSvcStart );
 		fieldGenerateCoatService.setOnCancelled( this::onSvcEnd );
 		fieldGenerateCoatService.setOnSucceeded( this::onSvcSuccess );
 		fieldGenerateCoatService.setOnFailed( this::onSvcFail );
 		fieldGenerateCoatService.progressProperty( ).addListener( this::onSvcProgress );
+		updateServiceProperties( );
 
 		// Additional background init.
 		Platform.runLater( ( ) -> {
@@ -693,5 +711,18 @@ public class MainController implements Initializable
 			}
 
 	} // onSvcSuccess
+
+
+	private void updateServiceProperties( )
+	{
+		fieldGenerateCoatService.setAlgorithm( getSelectedAlgorithm( ) );
+		fieldGenerateCoatService.setWidth( ( int ) fieldCanvas.getWidth( ) );
+		fieldGenerateCoatService.setHeight( ( int ) fieldCanvas.getHeight( ) );
+		fieldGenerateCoatService.setColorGenes( fieldColorGenes.getItems( ) );
+		fieldGenerateCoatService.setBaseColor( Color.WHITE );
+		fieldGenerateCoatService.setIterationLimit( -1 );
+		fieldGenerateCoatService.setRandomSeed( null ); // TODO
+
+	} // updateServiceProperties
 
 }

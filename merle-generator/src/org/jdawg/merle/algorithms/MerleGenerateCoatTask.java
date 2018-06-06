@@ -22,7 +22,17 @@ import javafx.scene.image.WritableImage;
 import javafx.scene.paint.Color;
 
 /**
- * MerleGenerateCoatTask
+ * MerleGenerateCoatTask probabilistically places "seeds" - colors at specific points - on
+ * the first pass over the image pixels. On subsequent passes, it gives each neutral pixel
+ * a chance to convert to each seed based on the strength of the signal. The signal
+ * strength is a function of the distance between the pixel in question and the seed
+ * attempting to spread its color. Should conversion fail for the pixel, it is given an
+ * opportunity to become a seed itself. All probabilities and probability decays are
+ * controlled by parameters specified in the ColorGenes given to this instance (from the
+ * AbstractGenerateCoatTask).
+ * <p>
+ * By default, the signal strength decays over the square of the distance between the two
+ * points. Other signal strength functions are possible.
  * 
  * @author David Schmidt (dschmidt13@gmail.com)
  */
@@ -60,9 +70,9 @@ public class MerleGenerateCoatTask extends AbstractGenerateCoatTask
 
 
 	/**
-	 * Private constructor. Instantiate via Builder.
+	 * Extensible but protected constructor. Instantiate via Builder only!
 	 */
-	private MerleGenerateCoatTask( )
+	protected MerleGenerateCoatTask( )
 	{
 	} // MerleGenerateCoatTask
 
@@ -191,7 +201,6 @@ public class MerleGenerateCoatTask extends AbstractGenerateCoatTask
 
 	protected double degradeSignal( double signalStrength, double distance )
 	{
-		// FIXME - Try different things.
 		return signalStrength / Math.pow( distance, 2.0 );
 
 	} // degradeSignal

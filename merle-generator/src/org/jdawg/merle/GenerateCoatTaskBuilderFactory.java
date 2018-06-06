@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 
+import org.jdawg.merle.algorithms.MerleGenerateCoatLinearDistanceTask;
 import org.jdawg.merle.algorithms.MerleGenerateCoatTask;
 
 /**
@@ -28,6 +29,7 @@ public class GenerateCoatTaskBuilderFactory
 		{
 		// TODO - Perhaps this could be loaded from a file somehow?
 		CONFIG_MAP.put( "Merle-Distance-Squared", MerleGenerateCoatTask.Builder::new );
+		CONFIG_MAP.put( "Merle-Distance-Linear", MerleGenerateCoatLinearDistanceTask.Builder::new );
 		}
 
 
