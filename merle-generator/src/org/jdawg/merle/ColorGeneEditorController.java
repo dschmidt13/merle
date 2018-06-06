@@ -162,7 +162,7 @@ public class ColorGeneEditorController implements Initializable
 
 	private Color choosePatternBackground( )
 	{
-		final int LIGHT_THRESHOLD = 255 * 3 / 4;
+		final int LIGHT_THRESHOLD = 255 * 13 / 15;
 
 		int lightCount = 0;
 		if ( fieldRed.getValue( ) > LIGHT_THRESHOLD )
