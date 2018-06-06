@@ -16,6 +16,10 @@ import org.jdawg.merle.AbstractGenerateCoatTask;
  */
 public class MerleGenerateCoatLinearDistanceTask extends MerleGenerateCoatTask
 {
+	// LAM - It may be better to allow ColorGenes to specify their own bits of expression
+	// code to be wrapped as configurable functions and used to decay signals without
+	// extending the original Merle algorithm class?
+
 	/**
 	 * Builds an instance of MerleGenerateCoatLinearDistanceTask.
 	 * 
