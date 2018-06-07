@@ -27,6 +27,14 @@ import javafx.scene.layout.BorderPane;
 public class CoatProgressSummary extends BorderPane implements Initializable
 {
 	// Class constants.
+	private static final long ONE_THOUSAND = 1000;
+	private static final long ONE_MILLION = 1000 * ONE_THOUSAND;
+	private static final long ONE_BILLION = 1000 * ONE_MILLION;
+	private static final long ONE_TRILLION = 1000 * ONE_BILLION;
+	private static final long ONE_QUADRILLION = 1000 * ONE_TRILLION;
+	private static final long ONE_QUINTILLION = 1000 * ONE_QUADRILLION;
+
+	// Class constants.
 	private static final String COMPONENT_FXML_FILENAME = "CoatProgressSummary.fxml";
 
 	// Data members.
@@ -48,7 +56,13 @@ public class CoatProgressSummary extends BorderPane implements Initializable
 	private Label fieldLabelIterations;
 
 	@FXML
+	private Label fieldLabelCalculations;
+
+	@FXML
 	private Label fieldLabelPctComplete;
+
+	@FXML
+	private Label fieldLabelStartTime;
 
 	@FXML
 	private Label fieldLabelCurrentRunTime;
@@ -94,19 +108,39 @@ public class CoatProgressSummary extends BorderPane implements Initializable
 
 		if ( duration.toHours( ) > 0 )
 			{
-			builder.append( duration.toHours( ) ).append( "h " );
-			builder.append( duration.toMinutes( ) ).append( "m " );
+			builder.append( duration.toHoursPart( ) ).append( "h " );
+			builder.append( duration.toMinutesPart( ) ).append( "m " );
 			}
 		else if ( duration.toMinutes( ) > 0 )
 			{
-			builder.append( duration.toMinutes( ) ).append( "m " );
+			builder.append( duration.toMinutesPart( ) ).append( "m " );
 			}
 
-		builder.append( duration.toSeconds( ) ).append( "s" );
+		builder.append( duration.toSecondsPart( ) ).append( "s" );
 
 		return builder.toString( );
 
 	} // formatDuration
+
+
+	public static String getCountSummary( long value )
+	{
+		if ( value > ONE_QUINTILLION )
+			return ( ( value / ONE_QUINTILLION ) + "Qui" );
+		else if ( value > ONE_QUADRILLION )
+			return ( ( value / ONE_QUADRILLION ) + "Q" );
+		else if ( value > ONE_TRILLION )
+			return ( ( value / ONE_TRILLION ) + "T" );
+		else if ( value > ONE_BILLION )
+			return ( ( value / ONE_BILLION ) + "B" );
+		else if ( value > ONE_MILLION )
+			return ( ( value / ONE_MILLION ) + "M" );
+		else if ( value > ONE_THOUSAND )
+			return ( ( value / ONE_THOUSAND ) + "K" );
+		else
+			return ( Long.toString( value ) );
+
+	} // getRoughCount
 
 
 	@Override
@@ -134,7 +168,9 @@ public class CoatProgressSummary extends BorderPane implements Initializable
 			fieldLabelRandomSeed.setText( "" );
 			fieldLabelIterationLimit.setText( "" );
 			fieldLabelIterations.setText( "" );
+			fieldLabelCalculations.setText( "" );
 			fieldLabelPctComplete.setText( "" );
+			fieldLabelStartTime.setText( "" );
 			fieldLabelCurrentRunTime.setText( "" );
 			fieldLabelEstRemainingTime.setText( "" );
 			}
@@ -147,8 +183,11 @@ public class CoatProgressSummary extends BorderPane implements Initializable
 			fieldLabelIterationLimit
 					.setText( String.valueOf( fieldCoatProgress.getIterationLimit( ) ) );
 			fieldLabelIterations.setText( String.valueOf( fieldCoatProgress.getIterations( ) ) );
+			fieldLabelCalculations
+					.setText( getCountSummary( fieldCoatProgress.getCalculationsPerformed( ) ) );
 			fieldLabelPctComplete.setText( String.format( "%.2f%%",
 					100.0 * fieldCoatProgress.getEstimatedPercentComplete( ) ) );
+			fieldLabelStartTime.setText( fieldCoatProgress.getStartTime( ).toString( ) );
 			fieldLabelCurrentRunTime.setText( formatDuration( fieldCoatProgress.getRunTime( ) ) );
 			fieldLabelEstRemainingTime
 					.setText( formatDuration( fieldCoatProgress.getEstimatedRemainingRunTime( ) ) );

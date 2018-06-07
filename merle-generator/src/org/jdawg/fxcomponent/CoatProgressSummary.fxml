@@ -39,8 +39,20 @@
 				</HBox>
 				<HBox alignment="CENTER_LEFT" spacing="5.0">
 					<children>
+						<Label text="Calculations:" />
+						<Label fx:id="fieldLabelCalculations" />
+					</children>
+				</HBox>
+				<HBox alignment="CENTER_LEFT" spacing="5.0">
+					<children>
 						<Label text="Pct. Complete:" />
 						<Label fx:id="fieldLabelPctComplete" />
+					</children>
+				</HBox>
+				<HBox alignment="CENTER_LEFT" spacing="5.0">
+					<children>
+						<Label text="Start Time:" />
+						<Label fx:id="fieldLabelStartTime" />
 					</children>
 				</HBox>
 				<HBox alignment="CENTER_LEFT" spacing="5.0">

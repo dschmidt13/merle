@@ -6,6 +6,7 @@
 package org.jdawg.merle;
 
 import java.time.Duration;
+import java.time.Instant;
 
 import javafx.scene.image.WritableImage;
 
@@ -22,6 +23,7 @@ public class GenerateCoatProgress
 	private int fieldIterations;
 	private long fieldCalculationsPerformed;
 	private long fieldEstimatedCalculationsRemaining;
+	private Instant fieldStartTime;
 	private Duration fieldRunTime;
 	private WritableImage fieldCoatPattern;
 
@@ -164,6 +166,16 @@ public class GenerateCoatProgress
 
 
 	/**
+	 * @return Instant - the fieldStartTime
+	 */
+	public Instant getStartTime( )
+	{
+		return fieldStartTime;
+
+	} // getStartTime
+
+
+	/**
 	 * @return boolean - the fieldComplete
 	 */
 	public boolean isComplete( )
@@ -256,5 +268,15 @@ public class GenerateCoatProgress
 		fieldRunTime = runTime;
 
 	} // setRunTime
+
+
+	/**
+	 * @param startTime - a Instant to set as the fieldStartTime
+	 */
+	public void setStartTime( Instant startTime )
+	{
+		fieldStartTime = startTime;
+
+	} // setStartTime
 
 }

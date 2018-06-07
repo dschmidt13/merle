@@ -262,6 +262,7 @@ public abstract class AbstractGenerateCoatTask extends Task<GenerateCoatProgress
 		progress.setAlgorithmName( getAlgorithmName( ) );
 		progress.setIterationLimit( fieldIterationLimit );
 		progress.setComplete( fieldComplete );
+		progress.setStartTime( fieldStartTime );
 		progress.setRunTime( Duration.between( fieldStartTime, Instant.now( ) ) );
 		progress.setRandomSeed( fieldRandomSeed );
 		progress.setCoatPattern( fieldImage );
