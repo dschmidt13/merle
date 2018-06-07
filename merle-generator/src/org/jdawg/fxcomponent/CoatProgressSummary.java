@@ -128,17 +128,17 @@ public class CoatProgressSummary extends BorderPane implements Initializable
 	public static String getCountSummary( long value )
 	{
 		if ( value > ONE_QUINTILLION )
-			return ( ( value / ONE_QUINTILLION ) + "Qui" );
+			return ( ( value / ONE_QUINTILLION ) + " Quin" );
 		else if ( value > ONE_QUADRILLION )
-			return ( ( value / ONE_QUADRILLION ) + "Q" );
+			return ( ( value / ONE_QUADRILLION ) + " Q" );
 		else if ( value > ONE_TRILLION )
-			return ( ( value / ONE_TRILLION ) + "T" );
+			return ( ( value / ONE_TRILLION ) + " T" );
 		else if ( value > ONE_BILLION )
-			return ( ( value / ONE_BILLION ) + "B" );
+			return ( ( value / ONE_BILLION ) + " B" );
 		else if ( value > ONE_MILLION )
-			return ( ( value / ONE_MILLION ) + "M" );
+			return ( ( value / ONE_MILLION ) + " M" );
 		else if ( value > ONE_THOUSAND )
-			return ( ( value / ONE_THOUSAND ) + "K" );
+			return ( ( value / ONE_THOUSAND ) + " K" );
 		else
 			return ( Long.toString( value ) );
 
@@ -182,8 +182,8 @@ public class CoatProgressSummary extends BorderPane implements Initializable
 					: fieldCoatProgress.getAlgorithmName( ) );
 			fieldLabelRandomSeed.setText( fieldCoatProgress.getRandomSeed( ) == null ? ""
 					: String.valueOf( fieldCoatProgress.getRandomSeed( ) ) );
-			fieldLabelIterationLimit
-					.setText( String.valueOf( fieldCoatProgress.getIterationLimit( ) ) );
+			fieldLabelIterationLimit.setText( ( fieldCoatProgress.getIterationLimit( ) <= 0 ? "None"
+					: String.valueOf( fieldCoatProgress.getIterationLimit( ) ) ) );
 			fieldLabelIterations.setText( String.valueOf( fieldCoatProgress.getIterations( ) ) );
 			fieldLabelCalculations
 					.setText( getCountSummary( fieldCoatProgress.getCalculationsPerformed( ) ) );
