@@ -89,10 +89,15 @@ public class GenerateCoatProgress
 	public double getEstimatedPercentComplete( )
 	{
 		double estPctComplete;
-		if ( fieldCalculationsPerformed == 0 && fieldEstimatedCalculationsRemaining == 0 )
+		if ( isComplete( ) )
 			{
-			// Don't divide by 0. Just wing it.
-			estPctComplete = ( isComplete( ) ? 1 : 0 );
+			// If we're done, we're done, estimates aside.
+			estPctComplete = 1.0;
+			}
+		else if ( fieldCalculationsPerformed == 0 && fieldEstimatedCalculationsRemaining == 0 )
+			{
+			// Don't divide by 0.
+			estPctComplete = 0;
 			}
 		else
 			{
