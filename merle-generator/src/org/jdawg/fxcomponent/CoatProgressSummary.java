@@ -34,6 +34,8 @@ public class CoatProgressSummary extends BorderPane implements Initializable
 	private static final long ONE_QUADRILLION = 1000 * ONE_TRILLION;
 	private static final long ONE_QUINTILLION = 1000 * ONE_QUADRILLION;
 
+	private static final String DATE_FORMAT = "%1$tF %1$tl:%1$tM:%1$tS%1$tp";
+
 	// Class constants.
 	private static final String COMPONENT_FXML_FILENAME = "CoatProgressSummary.fxml";
 
@@ -187,7 +189,8 @@ public class CoatProgressSummary extends BorderPane implements Initializable
 					.setText( getCountSummary( fieldCoatProgress.getCalculationsPerformed( ) ) );
 			fieldLabelPctComplete.setText( String.format( "%.2f%%",
 					100.0 * fieldCoatProgress.getEstimatedPercentComplete( ) ) );
-			fieldLabelStartTime.setText( fieldCoatProgress.getStartTime( ).toString( ) );
+			fieldLabelStartTime.setText( String.format( DATE_FORMAT,
+					fieldCoatProgress.getStartTime( ).toEpochMilli( ) ) );
 			fieldLabelCurrentRunTime.setText( formatDuration( fieldCoatProgress.getRunTime( ) ) );
 			fieldLabelEstRemainingTime
 					.setText( formatDuration( fieldCoatProgress.getEstimatedRemainingRunTime( ) ) );
