@@ -18,6 +18,8 @@ import java.util.ResourceBundle;
 
 import javax.imageio.ImageIO;
 
+import org.jdawg.fxcomponent.CoatProgressSummary;
+
 import javafx.application.Platform;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
@@ -36,7 +38,6 @@ import javafx.scene.control.Dialog;
 import javafx.scene.control.DialogPane;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
-import javafx.scene.control.ProgressBar;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.image.Image;
 import javafx.scene.image.WritableImage;
@@ -271,10 +272,10 @@ public class MainController implements Initializable
 	private ListView<ColorGene> fieldColorGenes;
 
 	@FXML
-	private ProgressBar fieldProgressBar;
+	private ComboBox<String> fieldAlgorithmSelector;
 
 	@FXML
-	private ComboBox<String> fieldAlgorithmSelector;
+	private CoatProgressSummary fieldSummary;
 
 
 	/**
@@ -650,11 +651,9 @@ public class MainController implements Initializable
 				} );
 
 		fieldGenerateCoatService = new GenerateCoatService( );
-		fieldGenerateCoatService.setOnRunning( this::onSvcStart );
-		fieldGenerateCoatService.setOnCancelled( this::onSvcEnd );
-		fieldGenerateCoatService.setOnSucceeded( this::onSvcSuccess );
 		fieldGenerateCoatService.setOnFailed( this::onSvcFail );
-		fieldGenerateCoatService.progressProperty( ).addListener( this::onSvcProgress );
+		fieldGenerateCoatService.setOnSucceeded(
+				( event ) -> onServiceUpdate( fieldGenerateCoatService.getValue( ) ) );
 		updateServiceProperties( );
 
 		// Additional background init.
@@ -666,51 +665,35 @@ public class MainController implements Initializable
 	} // initialize
 
 
-	private void onSvcEnd( WorkerStateEvent event )
+	private void onServiceUpdate( GenerateCoatProgress progress )
 	{
-		fieldProgressBar.setVisible( false );
+		fieldSummary.setCoatProgress( progress );
 
-	} // onSvcEnd
+		if ( progress.isComplete( ) )
+			{
+			try
+				{
+				compositePattern( progress.getCoatPattern( ) );
+				}
+			catch ( IOException exception )
+				{
+				// TODO Auto-generated catch block
+				exception.printStackTrace( );
+				}
+			}
+		else
+			{
+			fieldCanvas.getGraphicsContext2D( ).drawImage( progress.getCoatPattern( ), 0, 0 );
+			}
+
+	} // onServiceUpdate
 
 
 	private void onSvcFail( WorkerStateEvent event )
 	{
-		fieldProgressBar.setVisible( false );
 		System.err.println( "Service error: " + event.getSource( ).getException( ) );
 
 	} // onSvcFail
-
-
-	private void onSvcProgress( ObservableValue<? extends Number> observable, Number oldValue,
-			Number newValue )
-	{
-		fieldProgressBar.setProgress( fieldGenerateCoatService.getProgress( ) );
-
-	} // onSvcProgress
-
-
-	private void onSvcStart( WorkerStateEvent event )
-	{
-		fieldProgressBar.setVisible( true );
-		fieldProgressBar.setProgress( -1 );
-
-	} // onSvcStart
-
-
-	private void onSvcSuccess( WorkerStateEvent event )
-	{
-		fieldProgressBar.setVisible( false );
-		try
-			{
-			compositePattern( fieldGenerateCoatService.getValue( ).getCoatPattern( ) );
-			}
-		catch ( IOException exception )
-			{
-			// TODO Auto-generated catch block
-			exception.printStackTrace( );
-			}
-
-	} // onSvcSuccess
 
 
 	private void updateServiceProperties( )
@@ -722,6 +705,7 @@ public class MainController implements Initializable
 		fieldGenerateCoatService.setBaseColor( Color.WHITE );
 		fieldGenerateCoatService.setIterationLimit( -1 );
 		fieldGenerateCoatService.setRandomSeed( null ); // TODO
+		fieldGenerateCoatService.setProgressFunction( this::onServiceUpdate );
 
 	} // updateServiceProperties
 

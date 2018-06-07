@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressBar?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<fx:root type="BorderPane" xmlns:fx="http://javafx.com/fxml/1">
+	<center>
+		<VBox alignment="TOP_CENTER" prefHeight="200.0" prefWidth="200.0" spacing="10.0"
+			BorderPane.alignment="CENTER">
+			<children>
+				<HBox alignment="CENTER_LEFT" spacing="5.0">
+					<children>
+						<Label text="Algorithm:" />
+						<Label fx:id="fieldLabelAlgorithm" />
+					</children>
+				</HBox>
+				<HBox alignment="CENTER_LEFT" spacing="5.0">
+					<children>
+						<Label text="Random Seed:" />
+						<Label fx:id="fieldLabelRandomSeed" />
+					</children>
+				</HBox>
+				<HBox alignment="CENTER_LEFT" spacing="5.0">
+					<children>
+						<Label text="Iteration Limit:" />
+						<Label fx:id="fieldLabelIterationLimit" />
+					</children>
+				</HBox>
+				<HBox alignment="CENTER_LEFT" spacing="5.0">
+					<children>
+						<Label text="Iterations:" />
+						<Label fx:id="fieldLabelIterations" />
+					</children>
+				</HBox>
+				<HBox alignment="CENTER_LEFT" spacing="5.0">
+					<children>
+						<Label text="Pct. Complete:" />
+						<Label fx:id="fieldLabelPctComplete" />
+					</children>
+				</HBox>
+				<HBox alignment="CENTER_LEFT" spacing="5.0">
+					<children>
+						<Label text="Run Time:" />
+						<Label fx:id="fieldLabelCurrentRunTime" />
+					</children>
+				</HBox>
+				<HBox alignment="CENTER_LEFT" spacing="5.0">
+					<children>
+						<Label text="Est. Remaining:" />
+						<Label fx:id="fieldLabelEstRemainingTime" />
+					</children>
+				</HBox>
+			</children>
+		</VBox>
+	</center>
+	<top>
+		<Label text="Progress Summary" BorderPane.alignment="CENTER">
+			<font>
+				<Font name="System Bold" size="13.0" />
+			</font>
+		</Label>
+	</top>
+	<bottom>
+		<ProgressBar fx:id="fieldProgressBar" prefWidth="200.0" progress="0.0"
+			BorderPane.alignment="CENTER" />
+	</bottom>
+	<padding>
+		<Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+	</padding>
+</fx:root>

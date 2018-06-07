@@ -28,8 +28,9 @@ public class GenerateCoatTaskBuilderFactory
 	static
 		{
 		// TODO - Perhaps this could be loaded from a file somehow?
-		CONFIG_MAP.put( "Merle-Distance-Squared", MerleGenerateCoatTask.Builder::new );
-		CONFIG_MAP.put( "Merle-Distance-Linear", MerleGenerateCoatLinearDistanceTask.Builder::new );
+		CONFIG_MAP.put( MerleGenerateCoatTask.ALGORITHM_NAME, MerleGenerateCoatTask.Builder::new );
+		CONFIG_MAP.put( MerleGenerateCoatLinearDistanceTask.ALGORITHM_NAME,
+				MerleGenerateCoatLinearDistanceTask.Builder::new );
 		}
 
 

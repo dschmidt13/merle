@@ -6,19 +6,19 @@
 package org.jdawg.merle.algorithms;
 
 import java.awt.Point;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Random;
 
 import org.jdawg.merle.AbstractGenerateCoatTask;
 import org.jdawg.merle.AbstractGenerateCoatTaskBuilder;
 import org.jdawg.merle.ColorGene;
 import org.jdawg.merle.ColorPoint;
-import org.jdawg.merle.GenerateCoatProgress;
 
-import javafx.scene.image.WritableImage;
 import javafx.scene.paint.Color;
 
 /**
@@ -62,11 +62,13 @@ public class MerleGenerateCoatTask extends AbstractGenerateCoatTask
 
 	} // Builder
 
+	// Class constants.
+	public static final String ALGORITHM_NAME = "Merle-DistanceInverseSquare";
+
 	// Data members.
 	private Map<Point, ColorGene> fieldSeeds = new HashMap<>( );
-	private int fieldIteration = 0;
-
-	private WritableImage fieldImage;
+	private long fieldCalcsPerformed;
+	private int fieldPixelsRemaining;
 
 
 	/**
@@ -75,70 +77,6 @@ public class MerleGenerateCoatTask extends AbstractGenerateCoatTask
 	protected MerleGenerateCoatTask( )
 	{
 	} // MerleGenerateCoatTask
-
-
-	@Override
-	protected GenerateCoatProgress call( )
-			throws Exception
-	{
-		long startTime = System.currentTimeMillis( );
-		fieldImage = createBlank( );
-
-		int width = getWidth( );
-		int height = getHeight( );
-		int nullCount = width * height;
-		long maxWork = nullCount;
-
-		Color[ ][ ] pixelColors = new Color[ height ][ ];
-		for ( int index = 0; index < height; index++ )
-			pixelColors[ index ] = new Color[ width ];
-
-		updateProgress( 0, maxWork );
-
-		List<ColorPoint> drawPoints = new ArrayList<>( );
-		while ( nullCount > 0 && !isCancelled( ) )
-			{
-			Map<Point, ColorGene> newSeeds = new HashMap<>( );
-			drawPoints.clear( );
-
-			for ( int yIndex = 0; yIndex < height; yIndex++ )
-				{
-				for ( int xIndex = 0; xIndex < width; xIndex++ )
-					{
-					if ( pixelColors[ yIndex ][ xIndex ] == null )
-						{
-						Point p = new Point( xIndex, yIndex );
-						Color color = chooseGrowthColor( p );
-
-						if ( color == null )
-							color = chooseSeedColor( p, newSeeds );
-
-						if ( color != null )
-							{
-							nullCount--;
-							pixelColors[ yIndex ][ xIndex ] = color;
-							drawPoints.add( new ColorPoint( p, color ) );
-							}
-						}
-					}
-				}
-
-			// This map is updated once per generation to prevent
-			// novel seeds from influencing fewer than all of the
-			// pixels.
-			fieldSeeds.putAll( newSeeds );
-
-			updateProgress( maxWork - nullCount, maxWork );
-			drawUpdate( fieldImage, drawPoints );
-
-			fieldIteration++;
-			if ( getPassLimit( ) > 0 && fieldIteration >= getPassLimit( ) )
-				break;
-			}
-
-		return getResult( System.currentTimeMillis( ) - startTime );
-
-	} // call
 
 
 	protected Color chooseGrowthColor( Point point )
@@ -162,6 +100,8 @@ public class MerleGenerateCoatTask extends AbstractGenerateCoatTask
 				strongestSignalDiff = randDiff;
 				strongestGene = gene;
 				}
+
+			fieldCalcsPerformed++;
 			}
 
 		Color growthColor = null;
@@ -183,7 +123,7 @@ public class MerleGenerateCoatTask extends AbstractGenerateCoatTask
 		for ( ColorGene candidate : getColorGenes( ) )
 			{
 			double prob = candidate.getSeedConversionProb( ) - ( candidate.getSeedConversionProb( )
-					* candidate.getCoolingRate( ) * fieldIteration );
+					* candidate.getCoolingRate( ) * ( getIteration( ) - 1 ) );
 			if ( rand.nextDouble( ) < prob )
 				{
 				gene = candidate;
@@ -206,15 +146,188 @@ public class MerleGenerateCoatTask extends AbstractGenerateCoatTask
 	} // degradeSignal
 
 
-	protected GenerateCoatProgress getResult( long runTime )
+	@Override
+	protected long estimateRemainingCalcs( )
 	{
-		GenerateCoatProgress result = new GenerateCoatProgress( );
+		long calcs = 0;
+		long area = fieldPixelsRemaining;
+		long lastArea = -1;
+		long seeds = fieldSeeds.size( );
+		double seedProb;
+		int stagnation = 0;
+		int iter = getIteration( ) - 1;
+		while ( area > 0 )
+			{
+			// One calc per seed per pixel.
+			calcs += seeds * area;
 
-		result.setIterations( fieldIteration );
-		result.setCoatPattern( fieldImage );
+			// Reduce area by the number converted.
+			area -= ( long ) ( getCombinedGrowthProb( iter, seeds ) * area );
 
-		return result;
+			// One seed calc per remaining pixel.
+			calcs += area;
 
-	} // getResult
+			// Reduce area by the new number seeding.
+			area -= ( long ) ( getCombinedSeedProb( iter ) * area );
+
+			// Are we stagnating?
+			if ( area == lastArea )
+				stagnation++;
+
+			// Have we stalled completely?
+			if ( stagnation > 5 )
+				{
+				calcs = Long.MAX_VALUE;
+				break;
+				}
+
+			// Keep track of where we were.
+			lastArea = area;
+
+			iter++;
+			}
+
+		return calcs;
+
+	} // estimateTotalCalcs
+
+
+	@Override
+	public String getAlgorithmName( )
+	{
+		return ALGORITHM_NAME;
+
+	} // getAlgorithmName
+
+
+	private double getCombinedGrowthProb( int iteration, long nSeeds )
+	{
+		// Estimate seed density and average distance to a seed.
+		double seedDensity = ( double ) nSeeds / ( getWidth( ) * getHeight( ) );
+		double dAvg = Math.sqrt( nSeeds / seedDensity );
+
+		// Get sum lifetime seed prob for weighting signal strength.
+		double sumLifetimeSeedProb = 0;
+		for ( ColorGene gene : getColorGenes( ) )
+			sumLifetimeSeedProb += getLifetimeSeedProb( gene, iteration );
+
+		// Estimate weighted signal strength average, taking cooling into consideration.
+		double strAvg = 0;
+		for ( ColorGene gene : getColorGenes( ) )
+			{
+			double weight = getLifetimeSeedProb( gene, iteration ) / sumLifetimeSeedProb;
+			strAvg += weight * gene.getSignalStrength( );
+			}
+
+		// Note: Might not work well if decay is nonlinear.
+		double sigAvg = degradeSignal( strAvg, dAvg );
+
+		return sigAvg;
+
+	} // getCombinedGrowthProb
+
+
+	/**
+	 * @return the total probability that a point will convert to a seed on this
+	 *         iteration.
+	 */
+	private double getCombinedSeedProb( int iteration )
+	{
+		double unseedProb = 1;
+		for ( ColorGene gene : getColorGenes( ) )
+			{
+			double iterProb = gene.getSeedConversionProb( )
+					- ( iteration * gene.getCoolingRate( ) * gene.getSeedConversionProb( ) );
+			unseedProb *= ( 1.0 - iterProb );
+			}
+
+		return ( 1.0 - unseedProb );
+
+	} // getCombinedSeedProb
+
+
+	@Override
+	protected long getCurrentCalcs( )
+	{
+		return fieldCalcsPerformed;
+
+	} // getCurrentCalcs
+
+
+	private double getLifetimeSeedProb( ColorGene gene, int iteration )
+	{
+		double notProb = 1;
+		for ( int index = 0; index < iteration; index++ )
+			{
+			double iterProb = gene.getSeedConversionProb( )
+					- ( iteration * gene.getCoolingRate( ) * gene.getSeedConversionProb( ) );
+			notProb *= ( 1.0 - iterProb );
+			}
+
+		return ( 1.0 - notProb );
+
+	} // getLifetimeSeedProb
+
+
+	@Override
+	protected void render( )
+	{
+		int width = getWidth( );
+		int height = getHeight( );
+		int nullCount = width * height;
+		long maxWork = nullCount;
+
+		// Keep track of remaining uncalculated points. To begin with, we have all of
+		// them. We'll iterate in queue order until the source queue is empty. Note that
+		// we bounce elements between two queues to keep track of our full iterations.
+		Queue<Point> srcQ = new ArrayDeque<>( nullCount );
+		for ( int yIdx = 0; yIdx < height; yIdx++ )
+			for ( int xIdx = 0; xIdx < width; xIdx++ )
+				srcQ.offer( new Point( xIdx, yIdx ) );
+		Queue<Point> collQ = new ArrayDeque<>( nullCount );
+
+		List<ColorPoint> drawPoints = new ArrayList<>( );
+		Map<Point, ColorGene> newSeeds = new HashMap<>( );
+
+		Queue<Point> swapQ;
+		Point point;
+		Color color;
+		while ( !isCancelled( ) && !srcQ.isEmpty( ) && nextIteration( ) )
+			{
+			newSeeds.clear( );
+			drawPoints.clear( );
+
+			while ( !srcQ.isEmpty( ) )
+				{
+				// Get the next point.
+				point = srcQ.poll( );
+
+				// Try to assign it a color.
+				color = chooseGrowthColor( point );
+				if ( color == null )
+					color = chooseSeedColor( point, newSeeds );
+
+				// Collect misses and save hits.
+				if ( color == null )
+					collQ.offer( point );
+				else
+					drawPoints.add( new ColorPoint( point, color ) );
+				}
+
+			// Update our rendering.
+			drawUpdate( drawPoints );
+
+			// This map is updated once per generation to prevent novel seeds from
+			// influencing fewer than all of the pixels.
+			fieldSeeds.putAll( newSeeds );
+
+			// Swap the source and collection queues to prepare for the next pass.
+			swapQ = srcQ;
+			srcQ = collQ;
+			collQ = swapQ;
+			swapQ = null;
+			}
+
+	} // render
 
 }

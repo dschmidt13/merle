@@ -20,11 +20,15 @@ public class GenerateCoatProgress
 	// Data members.
 	private boolean fieldComplete;
 	private int fieldIterations;
-	private int fieldIterationLimit;
 	private long fieldCalculationsPerformed;
 	private long fieldEstimatedCalculationsRemaining;
 	private Duration fieldRunTime;
 	private WritableImage fieldCoatPattern;
+
+	// TODO - Replace these fields with a dedicated config object.
+	private String fieldAlgorithmName;
+	private Long fieldRandomSeed;
+	private int fieldIterationLimit;
 
 
 	/**
@@ -33,6 +37,13 @@ public class GenerateCoatProgress
 	public GenerateCoatProgress( )
 	{
 	} // GenerateCoatProgress
+
+
+	public String getAlgorithmName( )
+	{
+		return fieldAlgorithmName;
+
+	} // getAlgorithmName
 
 
 	/**
@@ -135,6 +146,13 @@ public class GenerateCoatProgress
 	} // getIterations
 
 
+	public Long getRandomSeed( )
+	{
+		return fieldRandomSeed;
+
+	} // getRandomSeed
+
+
 	/**
 	 * @return Duration - the fieldRunTime
 	 */
@@ -153,6 +171,13 @@ public class GenerateCoatProgress
 		return fieldComplete;
 
 	} // isComplete
+
+
+	public void setAlgorithmName( String algorithmName )
+	{
+		fieldAlgorithmName = algorithmName;
+
+	} // setAlgorithmName
 
 
 	/**
@@ -214,6 +239,13 @@ public class GenerateCoatProgress
 		fieldIterations = iterations;
 
 	} // setIterations
+
+
+	public void setRandomSeed( Long randomSeed )
+	{
+		fieldRandomSeed = randomSeed;
+
+	} // setRandomSeed
 
 
 	/**

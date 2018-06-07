@@ -44,6 +44,11 @@ public class MerleGenerateCoatLinearDistanceTask extends MerleGenerateCoatTask
 
 	} // Builder
 
+	/**
+	 * The name and factory key for this algorithm.
+	 */
+	public static final String ALGORITHM_NAME = "Merle-DistanceInverse";
+
 
 	/**
 	 * Private constructor. Instantiate via Builder.
@@ -59,5 +64,13 @@ public class MerleGenerateCoatLinearDistanceTask extends MerleGenerateCoatTask
 		return signalStrength / distance;
 
 	} // degradeSignal
+
+
+	@Override
+	public String getAlgorithmName( )
+	{
+		return ALGORITHM_NAME;
+
+	} // getAlgorithmName
 
 }

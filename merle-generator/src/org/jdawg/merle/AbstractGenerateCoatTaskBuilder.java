@@ -8,6 +8,7 @@ package org.jdawg.merle;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.function.Consumer;
 
 import javafx.scene.paint.Color;
 
@@ -31,6 +32,7 @@ public abstract class AbstractGenerateCoatTaskBuilder
 	private int fieldHeight;
 	private List<ColorGene> fieldColorGenes;
 	private Color fieldBaseColor;
+	private Consumer<GenerateCoatProgress> fieldProgressFunction;
 
 
 	/**
@@ -62,7 +64,8 @@ public abstract class AbstractGenerateCoatTaskBuilder
 			instance.setRandom( new Random( ) );
 		else
 			instance.setRandom( new Random( fieldRandomSeed.longValue( ) ) );
-		instance.setPassLimit( fieldIterationLimit );
+		instance.setIterationLimit( fieldIterationLimit );
+		instance.setProgressFunction( fieldProgressFunction );
 
 		return instance;
 
@@ -95,6 +98,15 @@ public abstract class AbstractGenerateCoatTaskBuilder
 		return this;
 
 	} // iterationLimit
+
+
+	public AbstractGenerateCoatTaskBuilder progressFunction(
+			Consumer<GenerateCoatProgress> progressFunction )
+	{
+		fieldProgressFunction = progressFunction;
+		return this;
+
+	} // progressFunction
 
 
 	public AbstractGenerateCoatTaskBuilder randomSeed( Long randomSeed )

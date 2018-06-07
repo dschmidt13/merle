@@ -6,6 +6,7 @@
 package org.jdawg.merle;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
@@ -26,6 +27,7 @@ public class GenerateCoatService extends Service<GenerateCoatProgress>
 	private int fieldHeight;
 	private Long fieldRandomSeed;
 	private Color fieldBaseColor;
+	private Consumer<GenerateCoatProgress> fieldProgressFunction;
 
 
 	/**
@@ -51,7 +53,7 @@ public class GenerateCoatService extends Service<GenerateCoatProgress>
 
 		builder.width( fieldWidth ).height( fieldHeight ).colorGenes( fieldColorGenes )
 				.baseColor( fieldBaseColor ).iterationLimit( fieldIterationLimit )
-				.randomSeed( fieldRandomSeed );
+				.randomSeed( fieldRandomSeed ).progressFunction( fieldProgressFunction );
 
 		return builder.build( );
 
@@ -106,6 +108,17 @@ public class GenerateCoatService extends Service<GenerateCoatProgress>
 		fieldIterationLimit = iterationLimit;
 
 	} // setIterationLimit
+
+
+	/**
+	 * @param progressFunction - a Consumer<GenerateCoatProgress> to set as the
+	 *            fieldProgressFunction
+	 */
+	public void setProgressFunction( Consumer<GenerateCoatProgress> progressFunction )
+	{
+		fieldProgressFunction = progressFunction;
+
+	} // setProgressFunction
 
 
 	/**
