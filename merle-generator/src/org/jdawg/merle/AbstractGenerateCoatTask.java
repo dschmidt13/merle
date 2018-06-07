@@ -60,6 +60,7 @@ public abstract class AbstractGenerateCoatTask extends Task<GenerateCoatProgress
 
 	// Execution.
 	private Instant fieldStartTime;
+	private Instant fieldStopTime;
 	private WritableImage fieldImage;
 	private int fieldIteration = 0;
 	private boolean fieldComplete;
@@ -99,10 +100,13 @@ public abstract class AbstractGenerateCoatTask extends Task<GenerateCoatProgress
 			{
 			// TODO Auto-generated catch block
 			exception.printStackTrace( );
+			cancel( );
 			}
 
 		// Clean up progress members.
-		fieldComplete = true;
+		fieldStopTime = Instant.now( );
+		if ( !isCancelled( ) )
+			fieldComplete = true;
 		if ( fieldProgressFunction != null )
 			{
 			animation.cancel( );
@@ -269,6 +273,8 @@ public abstract class AbstractGenerateCoatTask extends Task<GenerateCoatProgress
 		progress.setCalculationsPerformed( getCurrentCalcs( ) );
 		progress.setEstimatedCalculationsRemaining( estimateRemainingCalcs( ) );
 		progress.setIterations( getIteration( ) );
+		progress.setCancelled( isCancelled( ) );
+		progress.setStopTime( fieldStopTime );
 
 		return progress;
 

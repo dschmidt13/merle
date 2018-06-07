@@ -7,17 +7,15 @@ package org.jdawg.merle.algorithms;
 
 import java.awt.Point;
 import java.util.ArrayDeque;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
 import org.jdawg.merle.AbstractGenerateCoatTask;
 import org.jdawg.merle.AbstractGenerateCoatTaskBuilder;
 import org.jdawg.merle.ColorGene;
-import org.jdawg.merle.ColorPoint;
 
+import javafx.scene.image.PixelWriter;
 import javafx.scene.paint.Color;
 
 /**
@@ -180,31 +178,28 @@ public class MerleGenerateCoatTask extends AbstractGenerateCoatTask
 	{
 		int width = getWidth( );
 		int height = getHeight( );
-		int nullCount = width * height;
-		long maxWork = nullCount;
 
 		// Keep track of remaining uncalculated points. To begin with, we have all of
 		// them. We'll iterate in queue order until the source queue is empty. Note that
 		// we bounce elements between two queues to keep track of our full iterations.
-		ArrayDeque<Point> srcQ = new ArrayDeque<>( nullCount );
+		ArrayDeque<Point> srcQ = new ArrayDeque<>( width * height );
 		for ( int yIdx = 0; yIdx < height; yIdx++ )
 			for ( int xIdx = 0; xIdx < width; xIdx++ )
 				srcQ.offer( new Point( xIdx, yIdx ) );
-		ArrayDeque<Point> collQ = new ArrayDeque<>( nullCount );
+		ArrayDeque<Point> collQ = new ArrayDeque<>( srcQ.size( ) );
 		fieldPixelsRemaining = srcQ.size( );
 
-		List<ColorPoint> drawPoints = new ArrayList<>( );
-		Map<Point, ColorGene> newSeeds = new HashMap<>( );
+		PixelWriter writer = getImage( ).getPixelWriter( );
 
+		Map<Point, ColorGene> newSeeds = new HashMap<>( );
 		ArrayDeque<Point> swapQ;
 		Point point;
 		Color color;
 		while ( !isCancelled( ) && !srcQ.isEmpty( ) && nextIteration( ) )
 			{
 			newSeeds.clear( );
-			drawPoints.clear( );
 
-			while ( !srcQ.isEmpty( ) )
+			while ( !srcQ.isEmpty( ) && !isCancelled( ) )
 				{
 				// Get the next point.
 				point = srcQ.poll( );
@@ -221,13 +216,10 @@ public class MerleGenerateCoatTask extends AbstractGenerateCoatTask
 					}
 				else
 					{
-					drawPoints.add( new ColorPoint( point, color ) );
+					writer.setColor( ( int ) point.getX( ), ( int ) point.getY( ), color );
 					fieldPixelsRemaining--;
 					}
 				}
-
-			// Update our rendering.
-			drawUpdate( drawPoints );
 
 			// This map is updated once per generation to prevent novel seeds from
 			// influencing fewer than all of the pixels.

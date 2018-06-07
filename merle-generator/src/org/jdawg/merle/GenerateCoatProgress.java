@@ -24,8 +24,10 @@ public class GenerateCoatProgress
 	private long fieldCalculationsPerformed;
 	private long fieldEstimatedCalculationsRemaining;
 	private Instant fieldStartTime;
+	private Instant fieldStopTime;
 	private Duration fieldRunTime;
 	private WritableImage fieldCoatPattern;
+	private boolean fieldCancelled;
 
 	// TODO - Replace these fields with a dedicated config object.
 	private String fieldAlgorithmName;
@@ -113,7 +115,7 @@ public class GenerateCoatProgress
 
 	public Duration getEstimatedRemainingRunTime( )
 	{
-		if ( fieldComplete )
+		if ( isComplete( ) || isCancelled( ) )
 			{
 			return Duration.ZERO;
 			}
@@ -153,6 +155,25 @@ public class GenerateCoatProgress
 	} // getIterations
 
 
+	/**
+	 * @return Instant - the fieldStopTime unless null (not stopped), in which case the
+	 *         stop time will be estimated by adding the estimated remaining run time to
+	 *         the current time.
+	 */
+	public Instant getOrEstimateStopTime( )
+	{
+		Instant stopTime = fieldStopTime;
+
+		if ( stopTime == null && getEstimatedRemainingRunTime( ) != null )
+			{
+			stopTime = Instant.now( ).plus( getEstimatedRemainingRunTime( ) );
+			}
+
+		return stopTime;
+
+	} // getOrEstimateStopTime
+
+
 	public Long getRandomSeed( )
 	{
 		return fieldRandomSeed;
@@ -181,6 +202,16 @@ public class GenerateCoatProgress
 
 
 	/**
+	 * @return boolean - the fieldCancelled
+	 */
+	public boolean isCancelled( )
+	{
+		return fieldCancelled;
+
+	} // isCancelled
+
+
+	/**
 	 * @return boolean - the fieldComplete
 	 */
 	public boolean isComplete( )
@@ -205,6 +236,16 @@ public class GenerateCoatProgress
 		fieldCalculationsPerformed = calculationsPerformed;
 
 	} // setCalculationsPerformed
+
+
+	/**
+	 * @param cancelled - a boolean to set as the fieldCancelled
+	 */
+	public void setCancelled( boolean cancelled )
+	{
+		fieldCancelled = cancelled;
+
+	} // setCancelled
 
 
 	/**
@@ -283,5 +324,15 @@ public class GenerateCoatProgress
 		fieldStartTime = startTime;
 
 	} // setStartTime
+
+
+	/**
+	 * @param stopTime - a Instant to set as the fieldStopTime
+	 */
+	public void setStopTime( Instant stopTime )
+	{
+		fieldStopTime = stopTime;
+
+	} // setStopTime
 
 }

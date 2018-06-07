@@ -10,7 +10,7 @@
 
 <fx:root type="BorderPane" xmlns:fx="http://javafx.com/fxml/1">
 	<center>
-		<VBox alignment="TOP_CENTER" prefHeight="200.0" prefWidth="200.0" spacing="10.0"
+		<VBox alignment="TOP_CENTER" prefHeight="200.0" prefWidth="200.0" spacing="5.0"
 			BorderPane.alignment="CENTER">
 			<children>
 				<HBox alignment="CENTER_LEFT" spacing="5.0">
@@ -21,14 +21,20 @@
 				</HBox>
 				<HBox alignment="CENTER_LEFT" spacing="5.0">
 					<children>
+						<Label text="Iteration Limit:" />
+						<Label fx:id="fieldLabelIterationLimit" />
+					</children>
+				</HBox>
+				<HBox alignment="CENTER_LEFT" spacing="5.0">
+					<children>
 						<Label text="Random Seed:" />
 						<Label fx:id="fieldLabelRandomSeed" />
 					</children>
 				</HBox>
 				<HBox alignment="CENTER_LEFT" spacing="5.0">
 					<children>
-						<Label text="Iteration Limit:" />
-						<Label fx:id="fieldLabelIterationLimit" />
+						<Label text="Start Time:" />
+						<Label fx:id="fieldLabelStartTime" />
 					</children>
 				</HBox>
 				<HBox alignment="CENTER_LEFT" spacing="5.0">
@@ -51,12 +57,6 @@
 				</HBox>
 				<HBox alignment="CENTER_LEFT" spacing="5.0">
 					<children>
-						<Label text="Start Time:" />
-						<Label fx:id="fieldLabelStartTime" />
-					</children>
-				</HBox>
-				<HBox alignment="CENTER_LEFT" spacing="5.0">
-					<children>
 						<Label text="Run Time:" />
 						<Label fx:id="fieldLabelCurrentRunTime" />
 					</children>
@@ -65,6 +65,12 @@
 					<children>
 						<Label text="Est. Remaining:" />
 						<Label fx:id="fieldLabelEstRemainingTime" />
+					</children>
+				</HBox>
+				<HBox alignment="CENTER_LEFT" spacing="5.0">
+					<children>
+						<Label text="Stop Time:" />
+						<Label fx:id="fieldLabelStopTime" />
 					</children>
 				</HBox>
 			</children>

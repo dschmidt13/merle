@@ -8,6 +8,7 @@ package org.jdawg.fxcomponent;
 import java.io.IOException;
 import java.net.URL;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.ResourceBundle;
 
 import org.jdawg.merle.GenerateCoatProgress;
@@ -35,6 +36,7 @@ public class CoatProgressSummary extends BorderPane implements Initializable
 	private static final long ONE_QUINTILLION = 1000 * ONE_QUADRILLION;
 
 	private static final String DATE_FORMAT = "%1$tF %1$tl:%1$tM:%1$tS%1$tp";
+	private static final String DATE_FORMAT_APPROX_TIME = "%1$tF ~%1$tl:%1$tM:%1$tS%1$tp";
 
 	// Class constants.
 	private static final String COMPONENT_FXML_FILENAME = "CoatProgressSummary.fxml";
@@ -65,6 +67,9 @@ public class CoatProgressSummary extends BorderPane implements Initializable
 
 	@FXML
 	private Label fieldLabelStartTime;
+
+	@FXML
+	private Label fieldLabelStopTime;
 
 	@FXML
 	private Label fieldLabelCurrentRunTime;
@@ -175,6 +180,7 @@ public class CoatProgressSummary extends BorderPane implements Initializable
 			fieldLabelStartTime.setText( "" );
 			fieldLabelCurrentRunTime.setText( "" );
 			fieldLabelEstRemainingTime.setText( "" );
+			fieldLabelStopTime.setText( "" );
 			}
 		else
 			{
@@ -195,14 +201,26 @@ public class CoatProgressSummary extends BorderPane implements Initializable
 			fieldLabelEstRemainingTime
 					.setText( formatDuration( fieldCoatProgress.getEstimatedRemainingRunTime( ) ) );
 
-			if ( fieldCoatProgress.isComplete( ) )
+			Instant stopTime = fieldCoatProgress.getOrEstimateStopTime( );
+
+			if ( fieldCoatProgress.isComplete( ) || fieldCoatProgress.isCancelled( ) )
 				{
 				fieldProgressBar.setVisible( false );
+				if ( stopTime != null )
+					{
+					fieldLabelStopTime
+							.setText( String.format( DATE_FORMAT, stopTime.toEpochMilli( ) ) );
+					}
 				}
 			else
 				{
 				fieldProgressBar.setVisible( true );
 				fieldProgressBar.setProgress( fieldCoatProgress.getEstimatedPercentComplete( ) );
+				if ( stopTime != null )
+					{
+					fieldLabelStopTime.setText(
+							String.format( DATE_FORMAT_APPROX_TIME, stopTime.toEpochMilli( ) ) );
+					}
 				}
 			}
 
