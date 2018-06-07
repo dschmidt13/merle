@@ -147,7 +147,8 @@ public class ColorGeneEditorController implements Initializable
 	private void addRecentPaletteColor( )
 	{
 		Color color = getColor( );
-		if ( !fieldBasePaletteColors.contains( color ) )
+		if ( !fieldBasePaletteColors.contains( color )
+				&& !fieldRecentPaletteColors.contains( color ) )
 			{
 			if ( fieldRecentPaletteColors.size( ) >= RECENT_PALETTE_MAX_SIZE )
 				fieldRecentPaletteColors.poll( );
