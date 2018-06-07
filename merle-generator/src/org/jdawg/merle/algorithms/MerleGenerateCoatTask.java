@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 import java.util.Random;
 
 import org.jdawg.merle.AbstractGenerateCoatTask;
@@ -95,13 +94,14 @@ public class MerleGenerateCoatTask extends AbstractGenerateCoatTask
 			double adjSignalStr = degradeSignal( gene.getSignalStrength( ), distance );
 			double randDiff = adjSignalStr - rand.nextDouble( );
 
+			// Counting distance and signal degradation separately.
+			fieldCalcsPerformed += 2;
+
 			if ( randDiff > strongestSignalDiff )
 				{
 				strongestSignalDiff = randDiff;
 				strongestGene = gene;
 				}
-
-			fieldCalcsPerformed++;
 			}
 
 		Color growthColor = null;
@@ -124,6 +124,8 @@ public class MerleGenerateCoatTask extends AbstractGenerateCoatTask
 			{
 			double prob = candidate.getSeedConversionProb( ) - ( candidate.getSeedConversionProb( )
 					* candidate.getCoolingRate( ) * ( getIteration( ) - 1 ) );
+			fieldCalcsPerformed++;
+
 			if ( rand.nextDouble( ) < prob )
 				{
 				gene = candidate;
@@ -149,45 +151,10 @@ public class MerleGenerateCoatTask extends AbstractGenerateCoatTask
 	@Override
 	protected long estimateRemainingCalcs( )
 	{
-		long calcs = 0;
-		long area = fieldPixelsRemaining;
-		long lastArea = -1;
-		long seeds = fieldSeeds.size( );
-		double seedProb;
-		int stagnation = 0;
-		int iter = getIteration( ) - 1;
-		while ( area > 0 )
-			{
-			// One calc per seed per pixel.
-			calcs += seeds * area;
-
-			// Reduce area by the number converted.
-			area -= ( long ) ( getCombinedGrowthProb( iter, seeds ) * area );
-
-			// One seed calc per remaining pixel.
-			calcs += area;
-
-			// Reduce area by the new number seeding.
-			area -= ( long ) ( getCombinedSeedProb( iter ) * area );
-
-			// Are we stagnating?
-			if ( area == lastArea )
-				stagnation++;
-
-			// Have we stalled completely?
-			if ( stagnation > 5 )
-				{
-				calcs = Long.MAX_VALUE;
-				break;
-				}
-
-			// Keep track of where we were.
-			lastArea = area;
-
-			iter++;
-			}
-
-		return calcs;
+		long maxArea = getWidth( ) * getHeight( );
+		double areaComplete = ( double ) ( maxArea - fieldPixelsRemaining ) / maxArea;
+		double estTotalWork = ( fieldCalcsPerformed / areaComplete );
+		return ( ( ( long ) estTotalWork ) - fieldCalcsPerformed );
 
 	} // estimateTotalCalcs
 
@@ -200,73 +167,12 @@ public class MerleGenerateCoatTask extends AbstractGenerateCoatTask
 	} // getAlgorithmName
 
 
-	private double getCombinedGrowthProb( int iteration, long nSeeds )
-	{
-		// Estimate seed density and average distance to a seed.
-		double seedDensity = ( double ) nSeeds / ( getWidth( ) * getHeight( ) );
-		double dAvg = Math.sqrt( nSeeds / seedDensity );
-
-		// Get sum lifetime seed prob for weighting signal strength.
-		double sumLifetimeSeedProb = 0;
-		for ( ColorGene gene : getColorGenes( ) )
-			sumLifetimeSeedProb += getLifetimeSeedProb( gene, iteration );
-
-		// Estimate weighted signal strength average, taking cooling into consideration.
-		double strAvg = 0;
-		for ( ColorGene gene : getColorGenes( ) )
-			{
-			double weight = getLifetimeSeedProb( gene, iteration ) / sumLifetimeSeedProb;
-			strAvg += weight * gene.getSignalStrength( );
-			}
-
-		// Note: Might not work well if decay is nonlinear.
-		double sigAvg = degradeSignal( strAvg, dAvg );
-
-		return sigAvg;
-
-	} // getCombinedGrowthProb
-
-
-	/**
-	 * @return the total probability that a point will convert to a seed on this
-	 *         iteration.
-	 */
-	private double getCombinedSeedProb( int iteration )
-	{
-		double unseedProb = 1;
-		for ( ColorGene gene : getColorGenes( ) )
-			{
-			double iterProb = gene.getSeedConversionProb( )
-					- ( iteration * gene.getCoolingRate( ) * gene.getSeedConversionProb( ) );
-			unseedProb *= ( 1.0 - iterProb );
-			}
-
-		return ( 1.0 - unseedProb );
-
-	} // getCombinedSeedProb
-
-
 	@Override
 	protected long getCurrentCalcs( )
 	{
 		return fieldCalcsPerformed;
 
 	} // getCurrentCalcs
-
-
-	private double getLifetimeSeedProb( ColorGene gene, int iteration )
-	{
-		double notProb = 1;
-		for ( int index = 0; index < iteration; index++ )
-			{
-			double iterProb = gene.getSeedConversionProb( )
-					- ( iteration * gene.getCoolingRate( ) * gene.getSeedConversionProb( ) );
-			notProb *= ( 1.0 - iterProb );
-			}
-
-		return ( 1.0 - notProb );
-
-	} // getLifetimeSeedProb
 
 
 	@Override
@@ -280,16 +186,17 @@ public class MerleGenerateCoatTask extends AbstractGenerateCoatTask
 		// Keep track of remaining uncalculated points. To begin with, we have all of
 		// them. We'll iterate in queue order until the source queue is empty. Note that
 		// we bounce elements between two queues to keep track of our full iterations.
-		Queue<Point> srcQ = new ArrayDeque<>( nullCount );
+		ArrayDeque<Point> srcQ = new ArrayDeque<>( nullCount );
 		for ( int yIdx = 0; yIdx < height; yIdx++ )
 			for ( int xIdx = 0; xIdx < width; xIdx++ )
 				srcQ.offer( new Point( xIdx, yIdx ) );
-		Queue<Point> collQ = new ArrayDeque<>( nullCount );
+		ArrayDeque<Point> collQ = new ArrayDeque<>( nullCount );
+		fieldPixelsRemaining = srcQ.size( );
 
 		List<ColorPoint> drawPoints = new ArrayList<>( );
 		Map<Point, ColorGene> newSeeds = new HashMap<>( );
 
-		Queue<Point> swapQ;
+		ArrayDeque<Point> swapQ;
 		Point point;
 		Color color;
 		while ( !isCancelled( ) && !srcQ.isEmpty( ) && nextIteration( ) )
@@ -309,9 +216,14 @@ public class MerleGenerateCoatTask extends AbstractGenerateCoatTask
 
 				// Collect misses and save hits.
 				if ( color == null )
+					{
 					collQ.offer( point );
+					}
 				else
+					{
 					drawPoints.add( new ColorPoint( point, color ) );
+					fieldPixelsRemaining--;
+					}
 				}
 
 			// Update our rendering.
