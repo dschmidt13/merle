@@ -110,6 +110,10 @@ public abstract class AbstractGenerateCoatTask extends Task<GenerateCoatProgress
 		if ( fieldProgressFunction != null )
 			{
 			animation.cancel( );
+
+			// Force a final update with the cleaned up flags (in case we were between
+			// frames and missed the changes, which often happens).
+			new AnimationTask( ).run( );
 			}
 
 		return getProgressObj( );
