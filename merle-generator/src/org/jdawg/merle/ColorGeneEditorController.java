@@ -314,7 +314,6 @@ public class ColorGeneEditorController implements Initializable
 		fieldPatternService.setWidth( ( int ) fieldSamplePattern.getWidth( ) );
 		fieldPatternService.setHeight( ( int ) fieldSamplePattern.getHeight( ) );
 		fieldPatternService.setIterationLimit( 5 );
-		// TODO - Make sample pattern algorithm dynamic with UI.
 		fieldPatternService.setAlgorithm(
 				GenerateCoatTaskBuilderFactory.getSupportedAlgorithms( ).iterator( ).next( ) );
 		fieldPatternService.setOnSucceeded( this::redrawPattern );

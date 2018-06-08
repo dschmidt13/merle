@@ -39,6 +39,7 @@ import javafx.scene.control.DialogPane;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.SelectionMode;
+import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.WritableImage;
 import javafx.scene.input.Clipboard;
@@ -276,6 +277,9 @@ public class MainController implements Initializable
 
 	@FXML
 	private CoatProgressSummary fieldSummary;
+
+	@FXML
+	private TextField fieldRandomSeed;
 
 
 	/**
@@ -640,15 +644,18 @@ public class MainController implements Initializable
 		fieldColorGenes.setOnMouseClicked( this::handleGeneListClick );
 		fieldColorGenes.setOnKeyPressed( this::handleGeneListKeyPressed );
 
+		// Initialize the edit pane so we can set its algorithm.
+		getEditDialog( null );
+
 		// Initialize the algorithm selector.
 		fieldAlgorithmSelector.getItems( )
 				.addAll( GenerateCoatTaskBuilderFactory.getSupportedAlgorithms( ) );
-		fieldAlgorithmSelector.getSelectionModel( ).select( 0 );
 		fieldAlgorithmSelector.getSelectionModel( ).selectedItemProperty( )
 				.addListener( ( obs, old, nw ) -> {
 				if ( fieldEditorController != null )
 					fieldEditorController.setAlgorithm( nw );
 				} );
+		fieldAlgorithmSelector.getSelectionModel( ).select( 0 );
 
 		fieldGenerateCoatService = new GenerateCoatService( );
 		fieldGenerateCoatService.setOnFailed( this::onSvcFail );
@@ -659,7 +666,6 @@ public class MainController implements Initializable
 		// Additional background init.
 		Platform.runLater( ( ) -> {
 		getFileChooser( );
-		getEditDialog( null );
 		} );
 
 	} // initialize
@@ -704,8 +710,17 @@ public class MainController implements Initializable
 		fieldGenerateCoatService.setColorGenes( fieldColorGenes.getItems( ) );
 		fieldGenerateCoatService.setBaseColor( Color.WHITE );
 		fieldGenerateCoatService.setIterationLimit( -1 );
-		fieldGenerateCoatService.setRandomSeed( null ); // TODO
 		fieldGenerateCoatService.setProgressFunction( this::onServiceUpdate );
+
+		try
+			{
+			Long randomSeed = Long.valueOf( fieldRandomSeed.getText( ) );
+			fieldGenerateCoatService.setRandomSeed( randomSeed );
+			}
+		catch ( NumberFormatException ignored )
+			{
+			fieldGenerateCoatService.setRandomSeed( null );
+			}
 
 	} // updateServiceProperties
 
