@@ -19,8 +19,11 @@ import java.util.ResourceBundle;
 import javax.imageio.ImageIO;
 
 import org.jdawg.fxcomponent.CoatProgressSummary;
+import org.jdawg.fxcomponent.ColorSelector;
 
 import javafx.application.Platform;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.concurrent.WorkerStateEvent;
@@ -31,6 +34,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
@@ -50,6 +54,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Modality;
@@ -259,8 +264,13 @@ public class MainController implements Initializable
 
 	// Data members.
 	private FileChooser fieldFileChooser;
-	private Dialog<Boolean> fieldEditDialog;
-	private ColorGeneEditorController fieldEditorController;
+	private Dialog<Boolean> fieldEditColorGeneDialog;
+	private Dialog<Color> fieldEditEyeColorDialog;
+	private Dialog<Color> fieldEditNoseColorDialog;
+	private ColorGeneEditorController fieldColorGeneEditorController;
+
+	private ObjectProperty<Color> fieldEyeColor = new SimpleObjectProperty<>( null );
+	private ObjectProperty<Color> fieldNoseColor = new SimpleObjectProperty<>( null );
 
 	// Background service.
 	private GenerateCoatService fieldGenerateCoatService;
@@ -280,6 +290,12 @@ public class MainController implements Initializable
 
 	@FXML
 	private TextField fieldRandomSeed;
+
+	@FXML
+	private Canvas fieldEyeColorCanvas;
+
+	@FXML
+	private Canvas fieldNoseColorCanvas;
 
 
 	/**
@@ -338,6 +354,24 @@ public class MainController implements Initializable
 		clipboard.setContent( content );
 
 	} // actCopy
+
+
+	public void actEditEyeColor( )
+	{
+		Optional<Color> result = getEditEyeColorDialog( ).showAndWait( );
+		if ( result.isPresent( ) )
+			fieldEyeColor.set( result.get( ) );
+
+	} // actEditEyeColor
+
+
+	public void actEditNoseColor( )
+	{
+		Optional<Color> result = getEditNoseColorDialog( ).showAndWait( );
+		if ( result.isPresent( ) )
+			fieldNoseColor.set( result.get( ) );
+
+	} // actEditNoseColor
 
 
 	public void actGenerate( )
@@ -478,10 +512,33 @@ public class MainController implements Initializable
 	} // createDefaultColorGene
 
 
+	private Dialog<Color> createEditColorDialog( String title )
+	{
+		DialogPane pane = new DialogPane( );
+		ColorSelector selector = new ColorSelector( );
+		pane.setContent( selector );
+
+		Dialog<Color> dialog = new Dialog<>( );
+		dialog.initModality( Modality.APPLICATION_MODAL );
+		dialog.setTitle( title );
+		dialog.setDialogPane( pane );
+
+		// Add buttons.
+		pane.getButtonTypes( ).add( ButtonType.OK );
+		pane.getButtonTypes( ).add( ButtonType.CANCEL );
+
+		dialog.setResultConverter( ( buttonType ) -> ( ButtonType.OK.equals( buttonType )
+				? selector.getColor( ) : null ) );
+
+		return dialog;
+
+	} // createEditColorDialog
+
+
 	public void destroy( )
 	{
 		// Get subcontrollers to clean up their messes.
-		fieldEditorController.destroy( );
+		fieldColorGeneEditorController.destroy( );
 
 		// Clean up our own messes.
 		fieldGenerateCoatService.cancel( );
@@ -493,7 +550,7 @@ public class MainController implements Initializable
 	{
 		boolean saved = false;
 
-		Dialog<Boolean> dialog = getEditDialog( colorGene );
+		Dialog<Boolean> dialog = getEditColorGeneDialog( colorGene );
 		Optional<Boolean> result = dialog.showAndWait( );
 		if ( result.isPresent( ) )
 			saved = result.get( ).booleanValue( );
@@ -501,6 +558,18 @@ public class MainController implements Initializable
 		return saved;
 
 	} // actEditColorGene
+
+
+	private void fillCanvas( Canvas canvas, Paint paint )
+	{
+		// TODO - This could probably be moved to a static utility class.
+		GraphicsContext gfx = canvas.getGraphicsContext2D( );
+		Paint oldPaint = gfx.getFill( );
+		gfx.setFill( paint );
+		gfx.fillRect( 0, 0, canvas.getWidth( ), canvas.getHeight( ) );
+		gfx.setFill( oldPaint );
+
+	} // fillCanvas
 
 
 	private BufferedImage getBackground( int minWidth, int minHeight )
@@ -519,25 +588,25 @@ public class MainController implements Initializable
 	} // getBackground
 
 
-	private Dialog<Boolean> getEditDialog( ColorGene colorGene )
+	private Dialog<Boolean> getEditColorGeneDialog( ColorGene colorGene )
 	{
-		if ( fieldEditDialog == null )
+		if ( fieldEditColorGeneDialog == null )
 			{
 			try
 				{
 				FXMLLoader loader = new FXMLLoader( EDITOR_FXML_URL );
 				Parent editRoot = loader.load( );
-				fieldEditorController = loader.getController( );
+				fieldColorGeneEditorController = loader.getController( );
 
 				DialogPane pane = new DialogPane( );
 				pane.setContent( editRoot );
 
 				editRoot.requestLayout( );
 
-				fieldEditDialog = new Dialog<>( );
-				fieldEditDialog.initModality( Modality.APPLICATION_MODAL );
-				fieldEditDialog.setTitle( "Edit Gene" );
-				fieldEditDialog.setDialogPane( pane );
+				fieldEditColorGeneDialog = new Dialog<>( );
+				fieldEditColorGeneDialog.initModality( Modality.APPLICATION_MODAL );
+				fieldEditColorGeneDialog.setTitle( "Edit Gene" );
+				fieldEditColorGeneDialog.setDialogPane( pane );
 
 				// Add buttons.
 				pane.getButtonTypes( ).add( ButtonType.OK );
@@ -546,12 +615,14 @@ public class MainController implements Initializable
 				// Configure OK button to update its gene with the changes. Wired per
 				// Dialog validation Javadoc note.
 				Button okBtn = ( Button ) pane.lookupButton( ButtonType.OK );
-				okBtn.addEventFilter( ActionEvent.ACTION, fieldEditorController::handleOk );
+				okBtn.addEventFilter( ActionEvent.ACTION,
+						fieldColorGeneEditorController::handleOk );
 				Button cancelBtn = ( Button ) pane.lookupButton( ButtonType.CANCEL );
-				cancelBtn.addEventFilter( ActionEvent.ACTION, fieldEditorController::handleCancel );
+				cancelBtn.addEventFilter( ActionEvent.ACTION,
+						fieldColorGeneEditorController::handleCancel );
 
 				// Lets the caller know whether the user accepted the changes.
-				fieldEditDialog
+				fieldEditColorGeneDialog
 						.setResultConverter( ( buttonType ) -> ButtonType.OK.equals( buttonType ) );
 				}
 			catch ( IOException exception )
@@ -561,17 +632,40 @@ public class MainController implements Initializable
 				}
 			}
 
-		fieldEditorController.setColorGene( colorGene );
+		fieldColorGeneEditorController.setColorGene( colorGene );
 
-		return fieldEditDialog;
+		return fieldEditColorGeneDialog;
 
-	} // getEditDialog
+	} // getEditColorGeneDialog
+
+
+	private Dialog<Color> getEditEyeColorDialog( )
+	{
+		if ( fieldEditEyeColorDialog == null )
+			{
+			fieldEditEyeColorDialog = createEditColorDialog( "Eye Color" );
+			}
+
+		return fieldEditEyeColorDialog;
+
+	} // getEditEyeColorDialog
+
+
+	private Dialog<Color> getEditNoseColorDialog( )
+	{
+		if ( fieldEditNoseColorDialog == null )
+			{
+			fieldEditNoseColorDialog = createEditColorDialog( "Nose Color" );
+			}
+
+		return fieldEditNoseColorDialog;
+
+	} // getEditNoseColorDialog
 
 
 	private Color getEyeColor( )
 	{
-		return ( fieldColorGenes.getItems( ).isEmpty( ) ? Color.BLACK
-				: fieldColorGenes.getItems( ).get( 0 ).getColor( ) );
+		return fieldEyeColor.get( );
 
 	} // getEyeColor
 
@@ -595,8 +689,7 @@ public class MainController implements Initializable
 
 	private Color getNoseColor( )
 	{
-		return ( fieldColorGenes.getItems( ).size( ) > 1
-				? fieldColorGenes.getItems( ).get( 1 ).getColor( ) : getEyeColor( ) );
+		return fieldNoseColor.get( );
 
 	} // getNoseColor
 
@@ -635,8 +728,22 @@ public class MainController implements Initializable
 	} // handleGeneListKeyPressed
 
 
-	@Override
-	public void initialize( URL location, ResourceBundle resources )
+	private void initDialogs( )
+	{
+		// Initialize the edit pane so we can set its algorithm.
+		getEditColorGeneDialog( null );
+		getEditEyeColorDialog( );
+		getEditNoseColorDialog( );
+
+		// Additional background init.
+		Platform.runLater( ( ) -> {
+		getFileChooser( );
+		} );
+
+	} // initDialogs
+
+
+	private void initEmbeddedUi( )
 	{
 		// Initialize the ColorGenes list.
 		fieldColorGenes.getSelectionModel( ).setSelectionMode( SelectionMode.MULTIPLE );
@@ -644,31 +751,43 @@ public class MainController implements Initializable
 		fieldColorGenes.setOnMouseClicked( this::handleGeneListClick );
 		fieldColorGenes.setOnKeyPressed( this::handleGeneListKeyPressed );
 
-		// Initialize the edit pane so we can set its algorithm.
-		getEditDialog( null );
+		// Attach listeners to color properties.
+		fieldEyeColor.addListener( ( obs, old, nw ) -> fillCanvas( fieldEyeColorCanvas, nw ) );
+		fieldNoseColor.addListener( ( obs, old, nw ) -> fillCanvas( fieldNoseColorCanvas, nw ) );
+
+	} // initEmbeddedUi
+
+
+	@Override
+	public void initialize( URL location, ResourceBundle resources )
+	{
+		initEmbeddedUi( );
+		initDialogs( );
 
 		// Initialize the algorithm selector.
 		fieldAlgorithmSelector.getItems( )
 				.addAll( GenerateCoatTaskBuilderFactory.getSupportedAlgorithms( ) );
 		fieldAlgorithmSelector.getSelectionModel( ).selectedItemProperty( )
 				.addListener( ( obs, old, nw ) -> {
-				if ( fieldEditorController != null )
-					fieldEditorController.setAlgorithm( nw );
+				if ( fieldColorGeneEditorController != null )
+					fieldColorGeneEditorController.setAlgorithm( nw );
 				} );
 		fieldAlgorithmSelector.getSelectionModel( ).select( 0 );
 
+		initServices( );
+
+	} // initialize
+
+
+	private void initServices( )
+	{
 		fieldGenerateCoatService = new GenerateCoatService( );
 		fieldGenerateCoatService.setOnFailed( this::onSvcFail );
 		fieldGenerateCoatService.setOnSucceeded(
 				( event ) -> onServiceUpdate( fieldGenerateCoatService.getValue( ) ) );
 		updateServiceProperties( );
 
-		// Additional background init.
-		Platform.runLater( ( ) -> {
-		getFileChooser( );
-		} );
-
-	} // initialize
+	} // initServices
 
 
 	private void onServiceUpdate( GenerateCoatProgress progress )
