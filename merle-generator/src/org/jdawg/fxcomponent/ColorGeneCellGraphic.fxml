@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.HBox?>
+
+<fx:root alignment="CENTER_LEFT" spacing="5.0" type="HBox" xmlns="http://javafx.com/javafx/9.0.1" xmlns:fx="http://javafx.com/fxml/1">
+	<children>
+		<Label fx:id="fieldLabel" />
+      <HBox HBox.hgrow="ALWAYS" />
+		<ImageView fx:id="fieldColorSample" fitHeight="20.0" fitWidth="50.0" pickOnBounds="true" preserveRatio="true" />
+	</children>
+</fx:root>
