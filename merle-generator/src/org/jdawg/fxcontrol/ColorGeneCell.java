@@ -5,9 +5,9 @@
  */
 package org.jdawg.fxcontrol;
 
+import org.jdawg.fxcomponent.ColorGeneCellGraphic;
 import org.jdawg.merle.ColorGene;
 
-import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
@@ -28,10 +28,14 @@ public class ColorGeneCell extends ListCell<ColorGene>
 	// Data members.
 	private ListView<ColorGene> fieldListView;
 
+	// Graphic members.
+	private ColorGeneCellGraphic fieldGraphicNode;
+
 
 	public ColorGeneCell( ListView<ColorGene> listView )
 	{
 		fieldListView = listView;
+		fieldGraphicNode = new ColorGeneCellGraphic( );
 
 		// Set up event handlers.
 		initHandlers( );
@@ -164,29 +168,15 @@ public class ColorGeneCell extends ListCell<ColorGene>
 
 		if ( item == null || empty )
 			{
-			if ( getItem( ) != null )
-				{
-				getItem( ).nameProperty( ).removeListener( this::updateName );
-				}
 			setText( null );
 			setGraphic( null );
 			}
 		else
 			{
-			item.nameProperty( ).addListener( this::updateName );
-			setText( item.getName( ) );
+			fieldGraphicNode.setColorGene( item );
+			setGraphic( fieldGraphicNode );
 			}
 
 	} // updateItem
 
-
-	private void updateName( ObservableValue observable, String oldValue, String newValue )
-	{
-		if ( getItem( ) != null )
-			{
-			setText( newValue );
-			}
-
-	} // updateName
-
-} // class ColorGeneCell
+}

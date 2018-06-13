@@ -27,20 +27,19 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.embed.swing.SwingFXUtils;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.DialogPane;
 import javafx.scene.control.ListView;
 import javafx.scene.control.SelectionMode;
+import javafx.scene.control.SelectionModel;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.WritableImage;
@@ -84,7 +83,7 @@ public class MainController implements Initializable
 
 	// Data members.
 	private FileChooser fieldFileChooser;
-	private Dialog<Boolean> fieldEditColorGeneDialog;
+	private Dialog<ColorGeneEditResult> fieldEditColorGeneDialog;
 	private Dialog<Color> fieldEditEyeColorDialog;
 	private Dialog<Color> fieldEditNoseColorDialog;
 	private ColorGeneEditorController fieldColorGeneEditorController;
@@ -150,11 +149,43 @@ public class MainController implements Initializable
 
 	public void actAddColorGene( )
 	{
-		ColorGene gene = createDefaultColorGene( );
-		if ( editColorGene( gene ) )
-			fieldColorGenes.getItems( ).add( gene );
+		fieldColorGenes.getSelectionModel( ).clearSelection( );
+		actAddOrEditSelectedColorGene( );
 
 	} // actAddColorGene
+
+
+	public void actAddOrEditSelectedColorGene( )
+	{
+		Dialog<ColorGeneEditResult> dialog = getEditColorGeneDialog( );
+
+		SelectionModel<ColorGene> selectionModel = fieldColorGenes.getSelectionModel( );
+		ColorGene selected = selectionModel.getSelectedItem( );
+		if ( selected == null )
+			{
+			fieldColorGeneEditorController.setColorGene( createDefaultColorGene( ) );
+			}
+		else
+			{
+			fieldColorGeneEditorController.setColorGene( selected );
+			}
+
+		Optional<ColorGeneEditResult> result = dialog.showAndWait( );
+		if ( result.isPresent( ) )
+			{
+			ColorGeneEditResult editResult = result.get( );
+			if ( selected == null )
+				{
+				fieldColorGenes.getItems( ).add( editResult.getColorGene( ) );
+				}
+			else
+				{
+				int selIndex = selectionModel.getSelectedIndex( );
+				fieldColorGenes.getItems( ).set( selIndex, editResult.getColorGene( ) );
+				}
+			}
+
+	} // actAddOrEditSelectedColorGene
 
 
 	public void actCancel( )
@@ -366,20 +397,6 @@ public class MainController implements Initializable
 	} // destroy
 
 
-	private boolean editColorGene( ColorGene colorGene )
-	{
-		boolean saved = false;
-
-		Dialog<Boolean> dialog = getEditColorGeneDialog( colorGene );
-		Optional<Boolean> result = dialog.showAndWait( );
-		if ( result.isPresent( ) )
-			saved = result.get( ).booleanValue( );
-
-		return saved;
-
-	} // actEditColorGene
-
-
 	private void fillCanvas( Canvas canvas, Paint paint )
 	{
 		// TODO - This could probably be moved to a static utility class.
@@ -408,7 +425,7 @@ public class MainController implements Initializable
 	} // getBackground
 
 
-	private Dialog<Boolean> getEditColorGeneDialog( ColorGene colorGene )
+	private Dialog<ColorGeneEditResult> getEditColorGeneDialog( )
 	{
 		if ( fieldEditColorGeneDialog == null )
 			{
@@ -432,18 +449,9 @@ public class MainController implements Initializable
 				pane.getButtonTypes( ).add( ButtonType.OK );
 				pane.getButtonTypes( ).add( ButtonType.CANCEL );
 
-				// Configure OK button to update its gene with the changes. Wired per
-				// Dialog validation Javadoc note.
-				Button okBtn = ( Button ) pane.lookupButton( ButtonType.OK );
-				okBtn.addEventFilter( ActionEvent.ACTION,
-						fieldColorGeneEditorController::handleOk );
-				Button cancelBtn = ( Button ) pane.lookupButton( ButtonType.CANCEL );
-				cancelBtn.addEventFilter( ActionEvent.ACTION,
-						fieldColorGeneEditorController::handleCancel );
-
 				// Lets the caller know whether the user accepted the changes.
-				fieldEditColorGeneDialog
-						.setResultConverter( ( buttonType ) -> ButtonType.OK.equals( buttonType ) );
+				fieldEditColorGeneDialog.setResultConverter(
+						( buttonType ) -> fieldColorGeneEditorController.getResult( buttonType ) );
 				}
 			catch ( IOException exception )
 				{
@@ -451,8 +459,6 @@ public class MainController implements Initializable
 				exception.printStackTrace( );
 				}
 			}
-
-		fieldColorGeneEditorController.setColorGene( colorGene );
 
 		return fieldEditColorGeneDialog;
 
@@ -525,11 +531,7 @@ public class MainController implements Initializable
 	{
 		if ( event.getClickCount( ) == 2 )
 			{
-			ColorGene selected = fieldColorGenes.getSelectionModel( ).getSelectedItem( );
-			if ( selected == null )
-				actAddColorGene( );
-			else
-				editColorGene( selected );
+			actAddOrEditSelectedColorGene( );
 			event.consume( );
 			}
 
@@ -555,7 +557,7 @@ public class MainController implements Initializable
 	private void initDialogs( )
 	{
 		// Initialize the edit pane so we can set its algorithm.
-		getEditColorGeneDialog( null );
+		getEditColorGeneDialog( );
 		getEditEyeColorDialog( );
 		getEditNoseColorDialog( );
 

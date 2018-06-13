@@ -18,10 +18,10 @@ import org.jdawg.util.FXUtils;
 import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Worker.State;
 import javafx.concurrent.WorkerStateEvent;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.canvas.Canvas;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Slider;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
@@ -38,6 +38,7 @@ public class ColorGeneEditorController implements Initializable
 	private ColorGene fieldGene;
 	private GenerateCoatService fieldPatternService;
 	private TimerTask fieldLastPatternAutoRefreshTask;
+	private Image fieldsamplePatternImage;
 
 	// Injected FXML members.
 	@FXML
@@ -121,14 +122,34 @@ public class ColorGeneEditorController implements Initializable
 	} // destroy
 
 
-	public void handleCancel( ActionEvent event )
+	public ColorGeneEditResult getResult( ButtonType buttonType )
+	{
+		ColorGeneEditResult result = null;
+		if ( ButtonType.OK == buttonType )
+			{
+			handleOk( );
+			result = new ColorGeneEditResult( );
+			result.setPatternSample( fieldsamplePatternImage );
+			result.setColorGene( paramsToColorGene( ) );
+			}
+		else
+			{
+			handleCancel( );
+			}
+
+		return result;
+
+	} // getResult
+
+
+	private void handleCancel( )
 	{
 		fieldPatternService.cancel( );
 
 	} // handleCancel
 
 
-	public void handleOk( ActionEvent event )
+	private void handleOk( )
 	{
 		// Someday we might want to do validation or something here.
 		fieldPatternService.cancel( );
@@ -198,10 +219,11 @@ public class ColorGeneEditorController implements Initializable
 			if ( resultObj instanceof GenerateCoatProgress )
 				{
 				GenerateCoatProgress result = ( GenerateCoatProgress ) resultObj;
-				Image image = result.getCoatPattern( );
-				if ( image != null )
+				fieldsamplePatternImage = result.getCoatPattern( );
+				if ( fieldsamplePatternImage != null )
 					{
-					fieldSamplePattern.getGraphicsContext2D( ).drawImage( image, 0, 0 );
+					fieldSamplePattern.getGraphicsContext2D( ).drawImage( fieldsamplePatternImage,
+							0, 0 );
 					}
 				}
 			}
