@@ -20,12 +20,11 @@ import javax.imageio.ImageIO;
 
 import org.jdawg.fxcomponent.CoatProgressSummary;
 import org.jdawg.fxcomponent.ColorSelector;
+import org.jdawg.fxcontrol.ColorGeneCell;
 
 import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.value.ObservableValue;
-import javafx.collections.ObservableList;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
@@ -40,7 +39,6 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.DialogPane;
-import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TextField;
@@ -48,11 +46,8 @@ import javafx.scene.image.Image;
 import javafx.scene.image.WritableImage;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
-import javafx.scene.input.DragEvent;
-import javafx.scene.input.Dragboard;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.input.TransferMode;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.stage.FileChooser;
@@ -66,181 +61,6 @@ import javafx.stage.Modality;
  */
 public class MainController implements Initializable
 {
-	private class ColorGeneCell extends ListCell<ColorGene>
-	{
-		// Class constants.
-		private static final String STYLE_DRAG_INSERT_POINT = "" //
-				+ "-fx-border-width: 3px 0px 0px 0px; " //
-				+ "-fx-border-color: black; " //
-				+ "-fx-border-style: solid; ";
-
-
-		public ColorGeneCell( )
-		{
-			// Set up event handlers.
-			initHandlers( );
-
-		} // ColorGeneCell
-
-
-		private void handleClick( MouseEvent event )
-		{
-			if ( event.getClickCount( ) == 2 )
-				{
-				if ( getItem( ) == null )
-					actAddColorGene( );
-				else
-					editColorGene( getItem( ) );
-
-				event.consume( );
-				}
-
-		} // handleClick
-
-
-		private void handleDragDetected( MouseEvent event )
-		{
-			if ( getItem( ) != null )
-				{
-				event.consume( );
-
-				// Start a drag and drop and set up the dragboard.
-				Dragboard dragboard = startDragAndDrop( TransferMode.MOVE );
-				dragboard.setDragView( snapshot( null, null ) );
-
-				ClipboardContent content = new ClipboardContent( );
-				content.putString( getItem( ).getName( ) );
-
-				dragboard.setContent( content );
-
-				// Clear list selection.
-				fieldColorGenes.getSelectionModel( ).clearSelection( );
-				}
-
-		} // handleDragDetected
-
-
-		private void handleDragDropped( DragEvent event )
-		{
-			if ( event.getGestureSource( ) instanceof ColorGeneCell )
-				{
-				moveInList( ( ( ColorGeneCell ) event.getGestureSource( ) ).getIndex( ),
-						getIndex( ) );
-
-				// Let the system know we succeeded.
-				event.setDropCompleted( true );
-				event.consume( );
-				}
-
-		} // handleDragDropped
-
-
-		private void handleDragEntered( DragEvent event )
-		{
-			if ( event.getGestureSource( ) instanceof ColorGeneCell )
-				{
-				setStyle( STYLE_DRAG_INSERT_POINT );
-				event.consume( );
-				}
-
-		} // handleDragEntered
-
-
-		private void handleDragExited( DragEvent event )
-		{
-			if ( event.getGestureSource( ) instanceof ColorGeneCell )
-				{
-				setStyle( "" );
-				event.consume( );
-				}
-
-		} // handleDragExited
-
-
-		private void handleDragOver( DragEvent event )
-		{
-			if ( event.getGestureSource( ) instanceof ColorGeneCell )
-				{
-				event.acceptTransferModes( TransferMode.MOVE );
-				event.consume( );
-				}
-
-		} // handleDragOver
-
-
-		private void initHandlers( )
-		{
-			setOnDragDetected( this::handleDragDetected );
-			setOnDragEntered( this::handleDragEntered );
-			setOnDragExited( this::handleDragExited );
-			setOnDragOver( this::handleDragOver );
-			setOnDragDropped( this::handleDragDropped );
-			setOnMouseClicked( this::handleClick );
-
-		} // initHandlers
-
-
-		private void moveInList( int sourceIndex, int targetIndex )
-		{
-			// When it's a real item being dragged, remove it from the model list and add
-			// it at the target index or the end.
-			ObservableList<ColorGene> genes = fieldColorGenes.getItems( );
-			if ( ( sourceIndex != targetIndex ) && ( sourceIndex < genes.size( ) ) )
-				{
-				// Remove the source gene from its position in the list.
-				ColorGene sourceGene = genes.remove( sourceIndex );
-
-				// Moving up in the list: targetIndex doesn't change after removal.
-				if ( sourceIndex > targetIndex )
-					genes.add( targetIndex, sourceGene );
-
-				// Moving down in the list, but not out of bounds: targetIndex has shrunk
-				// by 1 after removal.
-				else if ( ( targetIndex - 1 ) < genes.size( ) )
-					genes.add( targetIndex - 1, sourceGene );
-
-				// Moving past the end of the list (targetIndex is irrelevant).
-				else
-					genes.add( sourceGene );
-				}
-
-		} // moveInList
-
-
-		@Override
-		protected void updateItem( ColorGene item, boolean empty )
-		{
-			super.updateItem( item, empty );
-
-			if ( item == null || empty )
-				{
-				if ( getItem( ) != null )
-					{
-					getItem( ).nameProperty( ).removeListener( this::updateName );
-					}
-				setText( null );
-				setGraphic( null );
-				}
-			else
-				{
-				item.nameProperty( ).addListener( this::updateName );
-				setText( item.getName( ) );
-				}
-
-		} // updateItem
-
-
-		private void updateName( ObservableValue observable, String oldValue, String newValue )
-		{
-			if ( getItem( ) != null )
-				{
-				setText( newValue );
-				}
-
-		} // updateName
-
-	} // class ColorGeneCell
-
 	/**
 	 * Pure red opaque pixels in the base image are mapped with coat color pixels from the
 	 * generated pattern.
@@ -705,7 +525,11 @@ public class MainController implements Initializable
 	{
 		if ( event.getClickCount( ) == 2 )
 			{
-			actAddColorGene( );
+			ColorGene selected = fieldColorGenes.getSelectionModel( ).getSelectedItem( );
+			if ( selected == null )
+				actAddColorGene( );
+			else
+				editColorGene( selected );
 			event.consume( );
 			}
 
@@ -747,7 +571,7 @@ public class MainController implements Initializable
 	{
 		// Initialize the ColorGenes list.
 		fieldColorGenes.getSelectionModel( ).setSelectionMode( SelectionMode.MULTIPLE );
-		fieldColorGenes.setCellFactory( ( ignored ) -> new ColorGeneCell( ) );
+		fieldColorGenes.setCellFactory( ( listView ) -> new ColorGeneCell( listView ) );
 		fieldColorGenes.setOnMouseClicked( this::handleGeneListClick );
 		fieldColorGenes.setOnKeyPressed( this::handleGeneListKeyPressed );
 
