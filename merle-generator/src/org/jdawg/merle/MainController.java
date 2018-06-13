@@ -81,6 +81,9 @@ public class MainController implements Initializable
 	private static final URL EDITOR_FXML_URL = MainController.class
 			.getResource( "ColorGeneEditor.fxml" );
 
+	private static final Color DEFAULT_COLOR_EYES = Color.SKYBLUE;
+	private static final Color DEFAULT_COLOR_NOSE = Color.BLACK;
+
 	// Data members.
 	private FileChooser fieldFileChooser;
 	private Dialog<ColorGeneEditResult> fieldEditColorGeneDialog;
@@ -577,9 +580,11 @@ public class MainController implements Initializable
 		fieldColorGenes.setOnMouseClicked( this::handleGeneListClick );
 		fieldColorGenes.setOnKeyPressed( this::handleGeneListKeyPressed );
 
-		// Attach listeners to color properties.
+		// Attach listeners to color properties and then set default values.
 		fieldEyeColor.addListener( ( obs, old, nw ) -> fillCanvas( fieldEyeColorCanvas, nw ) );
 		fieldNoseColor.addListener( ( obs, old, nw ) -> fillCanvas( fieldNoseColorCanvas, nw ) );
+		fieldEyeColor.set( DEFAULT_COLOR_EYES );
+		fieldNoseColor.set( DEFAULT_COLOR_NOSE );
 
 	} // initEmbeddedUi
 
