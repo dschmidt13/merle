@@ -5,6 +5,8 @@
  */
 package org.jdawg.util;
 
+import java.io.IOException;
+import java.net.URL;
 import java.time.Instant;
 import java.util.Date;
 import java.util.Objects;
@@ -12,6 +14,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import javafx.application.Platform;
+import javafx.fxml.FXMLLoader;
 
 /**
  * FXUtils provides utilities for working in the JavaFX environment.
@@ -54,6 +57,55 @@ public class FXUtils
 		throw new AssertionError( "Cannot instantiate static class." );
 
 	} // FXUtils
+
+
+	/**
+	 * Loads a given FXML file with the given controller object as both the root and
+	 * controller object of the resulting scene graph. Used by custom components to
+	 * bootstrap their FXML layouts without a lot of extra work. Call once during
+	 * construction as: {@code FXUtils.loadAsControlRoot( MY_FXML_FILE, this )}.
+	 * <p>
+	 * For more information, see
+	 * <a>https://docs.oracle.com/javafx/2/fxml_get_started/custom_control.htm</a>.
+	 * 
+	 * @param relativeUrlPath a String containing the URL path of the FXML file to load,
+	 *            relative to the controller object's class. Must not be null.
+	 * @param controller an Object to use as the controller and root of the FXML's graph.
+	 *            It must be of the same type as the root element type of the FXML file.
+	 *            Must not be null.
+	 * @return the FXMLLoader used to load the document (after the load has been
+	 *         performed). Returned as a convenience; typically this is not needed.
+	 * @throws RuntimeException if an IOException occurs loading the FXML document. This
+	 *             is the recommended practice by Oracle.
+	 */
+	public static FXMLLoader loadAsControlRoot( String relativeUrlPath, Object controller )
+			throws RuntimeException
+	{
+		Objects.requireNonNull( relativeUrlPath, "url must not be null." );
+		Objects.requireNonNull( controller, "controller must not be null." );
+
+		URL resourceUrl = controller.getClass( ).getResource( relativeUrlPath );
+
+		// Per tutorial example at:
+		// https://docs.oracle.com/javafx/2/fxml_get_started/custom_control.htm
+
+		// This instance will serve as our controller and dynamic root of our FXML graph.
+		FXMLLoader loader = new FXMLLoader( resourceUrl );
+		loader.setRoot( controller );
+		loader.setController( controller );
+
+		try
+			{
+			loader.load( );
+			}
+		catch ( IOException exception )
+			{
+			throw new RuntimeException( exception );
+			}
+
+		return loader;
+
+	} // loadAsRoot
 
 
 	/**

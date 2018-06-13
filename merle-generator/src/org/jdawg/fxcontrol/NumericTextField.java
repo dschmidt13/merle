@@ -5,13 +5,13 @@
  */
 package org.jdawg.fxcontrol;
 
-import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 
+import org.jdawg.util.FXUtils;
+
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleDoubleProperty;
-import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.control.TextField;
 
@@ -39,22 +39,7 @@ public class NumericTextField extends TextField implements Initializable
 	 */
 	public NumericTextField( )
 	{
-		// Per tutorial example at:
-		// https://docs.oracle.com/javafx/2/fxml_get_started/custom_control.htm
-
-		// This instance will serve as our controller and dynamic root of our FXML graph.
-		FXMLLoader loader = new FXMLLoader( getClass( ).getResource( COMPONENT_FXML_FILENAME ) );
-		loader.setRoot( this );
-		loader.setController( this );
-
-		try
-			{
-			loader.load( );
-			}
-		catch ( IOException exception )
-			{
-			throw new RuntimeException( exception );
-			}
+		FXUtils.loadAsControlRoot( COMPONENT_FXML_FILENAME, this );
 
 	} // NumericTextField
 
