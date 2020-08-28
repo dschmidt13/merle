@@ -8,6 +8,8 @@ package org.jdawg.merle;
 import java.time.Duration;
 import java.time.Instant;
 
+import org.jdawg.merle.config.GenerateConfig;
+
 import javafx.scene.image.WritableImage;
 
 /**
@@ -19,6 +21,7 @@ import javafx.scene.image.WritableImage;
 public class GenerateCoatProgress
 {
 	// Data members.
+	private GenerateConfig fieldConfig;
 	private boolean fieldComplete;
 	private int fieldIterations;
 	private long fieldCalculationsPerformed;
@@ -29,25 +32,12 @@ public class GenerateCoatProgress
 	private WritableImage fieldCoatPattern;
 	private boolean fieldCancelled;
 
-	// TODO - Replace these fields with a dedicated config object.
-	private String fieldAlgorithmName;
-	private Long fieldRandomSeed;
-	private int fieldIterationLimit;
-
-
 	/**
 	 * GenerateCoatProgress constructor.
 	 */
 	public GenerateCoatProgress( )
 	{
 	} // GenerateCoatProgress
-
-
-	public String getAlgorithmName( )
-	{
-		return fieldAlgorithmName;
-
-	} // getAlgorithmName
 
 
 	/**
@@ -58,6 +48,16 @@ public class GenerateCoatProgress
 		return fieldCalculationsPerformed;
 
 	} // getCalculationsPerformed
+
+
+	/**
+	 * @return the config
+	 */
+	public GenerateConfig getConfig( )
+	{
+		return fieldConfig;
+
+	} // getConfig
 
 
 	/**
@@ -136,16 +136,6 @@ public class GenerateCoatProgress
 
 
 	/**
-	 * @return int - the fieldIterationLimit
-	 */
-	public int getIterationLimit( )
-	{
-		return fieldIterationLimit;
-
-	} // getIterationLimit
-
-
-	/**
 	 * @return int - the fieldIterations
 	 */
 	public int getIterations( )
@@ -172,13 +162,6 @@ public class GenerateCoatProgress
 		return stopTime;
 
 	} // getOrEstimateStopTime
-
-
-	public Long getRandomSeed( )
-	{
-		return fieldRandomSeed;
-
-	} // getRandomSeed
 
 
 	/**
@@ -221,11 +204,14 @@ public class GenerateCoatProgress
 	} // isComplete
 
 
-	public void setAlgorithmName( String algorithmName )
+	/**
+	 * @param config the config to set
+	 */
+	public void setConfig( GenerateConfig config )
 	{
-		fieldAlgorithmName = algorithmName;
+		fieldConfig = config;
 
-	} // setAlgorithmName
+	} // setConfig
 
 
 	/**
@@ -280,16 +266,6 @@ public class GenerateCoatProgress
 
 
 	/**
-	 * @param iterationLimit - a int to set as the fieldIterationLimit
-	 */
-	public void setIterationLimit( int iterationLimit )
-	{
-		fieldIterationLimit = iterationLimit;
-
-	} // setIterationLimit
-
-
-	/**
 	 * @param iterations - a int to set as the fieldIterations
 	 */
 	public void setIterations( int iterations )
@@ -297,13 +273,6 @@ public class GenerateCoatProgress
 		fieldIterations = iterations;
 
 	} // setIterations
-
-
-	public void setRandomSeed( Long randomSeed )
-	{
-		fieldRandomSeed = randomSeed;
-
-	} // setRandomSeed
 
 
 	/**

@@ -13,6 +13,8 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.function.Consumer;
 
+import org.jdawg.merle.config.GenerateConfig;
+
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.scene.image.PixelWriter;
@@ -47,30 +49,24 @@ public abstract class AbstractGenerateCoatTask extends Task<GenerateCoatProgress
 	private static final Timer TIMER = new Timer( true );
 
 	// Data members.
-	// Configuration.
-	// TODO - Move to a real config class.
-	private List<ColorGene> fieldColorGenes;
-	private int fieldWidth;
-	private int fieldHeight;
-	private Color fieldBaseColor = Color.WHITE;
-	private int fieldIterationLimit = -1;
-	private Long fieldRandomSeed;
-	private Random fieldRandom = new Random( );
+	private final GenerateConfig fieldConfig;
+	private final Random fieldRandom;
 	private Consumer<GenerateCoatProgress> fieldProgressFunction;
-
-	// Execution.
 	private Instant fieldStartTime;
 	private Instant fieldStopTime;
 	private WritableImage fieldImage;
 	private int fieldIteration = 0;
 	private boolean fieldComplete;
 
-
 	/**
 	 * AbstractGenerateCoatTask constructor.
 	 */
-	protected AbstractGenerateCoatTask( )
+	public AbstractGenerateCoatTask( GenerateConfig config )
 	{
+		fieldConfig = config;
+		fieldRandom = ( config.getRandomSeed( ) == null ) ? new Random( )
+				: new Random( config.getRandomSeed( ).longValue( ) );
+
 	} // AbstractGenerateCoatTask
 
 
@@ -131,11 +127,11 @@ public abstract class AbstractGenerateCoatTask extends Task<GenerateCoatProgress
 	 */
 	protected WritableImage createBlank( )
 	{
-		final int width = getWidth( );
-		final int height = getHeight( );
-		final Color baseColor = getBaseColor( );
+		final int width = getConfig( ).getWidth( );
+		final int height = getConfig( ).getHeight( );
+		final Color baseColor = getConfig( ).getBaseColor( );
 
-		WritableImage image = new WritableImage( getWidth( ), getHeight( ) );
+		WritableImage image = new WritableImage( width, height );
 
 		PixelWriter writer = image.getPixelWriter( );
 		for ( int yIdx = 0; yIdx < height; yIdx++ )
@@ -171,44 +167,16 @@ public abstract class AbstractGenerateCoatTask extends Task<GenerateCoatProgress
 
 
 	/**
-	 * Returns the name of the algorithm.
-	 * 
-	 * @return
+	 * @return the config
 	 */
-	public abstract String getAlgorithmName( );
-
-
-	/**
-	 * @return Color - the fieldBaseColor
-	 */
-	public Color getBaseColor( )
+	public GenerateConfig getConfig( )
 	{
-		return fieldBaseColor;
+		return fieldConfig;
 
-	} // getBaseColor
-
-
-	/**
-	 * @return List<ColorGene> - the fieldColorGenes
-	 */
-	public List<ColorGene> getColorGenes( )
-	{
-		return fieldColorGenes;
-
-	} // getColorGenes
+	} // getConfig
 
 
 	protected abstract long getCurrentCalcs( );
-
-
-	/**
-	 * @return int - the fieldHeight
-	 */
-	public int getHeight( )
-	{
-		return fieldHeight;
-
-	} // getHeight
 
 
 	/**
@@ -235,16 +203,6 @@ public abstract class AbstractGenerateCoatTask extends Task<GenerateCoatProgress
 
 
 	/**
-	 * @return int - the fieldIterationLimit
-	 */
-	public int getIterationLimit( )
-	{
-		return fieldIterationLimit;
-
-	} // getIterationLimit
-
-
-	/**
 	 * @return Consumer<GenerateCoatProgress> - the fieldProgressFunction
 	 */
 	public Consumer<GenerateCoatProgress> getProgressFunction( )
@@ -267,12 +225,10 @@ public abstract class AbstractGenerateCoatTask extends Task<GenerateCoatProgress
 	protected GenerateCoatProgress getProgressObj( )
 	{
 		GenerateCoatProgress progress = new GenerateCoatProgress( );
-		progress.setAlgorithmName( getAlgorithmName( ) );
-		progress.setIterationLimit( fieldIterationLimit );
+		progress.setConfig( getConfig( ) );
 		progress.setComplete( fieldComplete );
 		progress.setStartTime( fieldStartTime );
 		progress.setRunTime( Duration.between( fieldStartTime, Instant.now( ) ) );
-		progress.setRandomSeed( fieldRandomSeed );
 		progress.setCoatPattern( fieldImage );
 		progress.setCalculationsPerformed( getCurrentCalcs( ) );
 		progress.setEstimatedCalculationsRemaining( estimateRemainingCalcs( ) );
@@ -295,20 +251,10 @@ public abstract class AbstractGenerateCoatTask extends Task<GenerateCoatProgress
 	} // getRandom
 
 
-	/**
-	 * @return int - the fieldWidth
-	 */
-	public int getWidth( )
-	{
-		return fieldWidth;
-
-	} // getWidth
-
-
 	protected boolean nextIteration( )
 	{
-		boolean canIterate = ( getIterationLimit( ) <= 0
-				|| ( fieldIteration < getIterationLimit( ) ) );
+		final long limit = getConfig( ).getIterationLimit( );
+		boolean canIterate = ( limit <= 0 ) || ( fieldIteration < limit );
 
 		if ( canIterate )
 			fieldIteration++;
@@ -324,62 +270,10 @@ public abstract class AbstractGenerateCoatTask extends Task<GenerateCoatProgress
 	protected abstract void render( );
 
 
-	void setBaseColor( Color baseColor )
-	{
-		fieldBaseColor = baseColor;
-
-	} // setBaseColor
-
-
-	void setColorGenes( List<ColorGene> colorGenes )
-	{
-		fieldColorGenes = colorGenes;
-
-	} // setColorGenes
-
-
-	void setHeight( int height )
-	{
-		fieldHeight = height;
-
-	} // setHeight
-
-
-	/**
-	 * @param iterationLimit - a int to set as the fieldIterationLimit
-	 */
-	public void setIterationLimit( int iterationLimit )
-	{
-		fieldIterationLimit = iterationLimit;
-
-	} // setIterationLimit
-
-
 	void setProgressFunction( Consumer<GenerateCoatProgress> progressFunction )
 	{
 		fieldProgressFunction = progressFunction;
 
 	} // setProgressFunction
-
-
-	void setRandom( Random random )
-	{
-		fieldRandom = random;
-
-	} // setRandom
-
-
-	void setRandomSeed( Long randomSeed )
-	{
-		fieldRandomSeed = randomSeed;
-
-	} // setRandomSeed
-
-
-	void setWidth( int width )
-	{
-		fieldWidth = width;
-
-	} // setWidth
 
 }

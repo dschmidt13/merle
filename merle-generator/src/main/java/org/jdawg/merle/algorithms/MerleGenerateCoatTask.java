@@ -12,8 +12,8 @@ import java.util.Map;
 import java.util.Random;
 
 import org.jdawg.merle.AbstractGenerateCoatTask;
-import org.jdawg.merle.AbstractGenerateCoatTaskBuilder;
 import org.jdawg.merle.ColorGene;
+import org.jdawg.merle.config.GenerateConfig;
 
 import javafx.scene.image.PixelWriter;
 import javafx.scene.paint.Color;
@@ -35,30 +35,6 @@ import javafx.scene.paint.Color;
  */
 public class MerleGenerateCoatTask extends AbstractGenerateCoatTask
 {
-	/**
-	 * Builds an instance of MerleGenerateCoatTask.
-	 * 
-	 * @author David Schmidt (dschmidt13@gmail.com)
-	 */
-	public static class Builder extends AbstractGenerateCoatTaskBuilder
-	{
-		/**
-		 * Public constructor.
-		 */
-		public Builder( )
-		{
-		} // Builder
-
-
-		@Override
-		protected AbstractGenerateCoatTask createInstance( )
-		{
-			return new MerleGenerateCoatTask( );
-
-		} // createInstance
-
-	} // Builder
-
 	// Class constants.
 	public static final String ALGORITHM_NAME = "Merle-DistanceInverseSquare";
 
@@ -67,12 +43,10 @@ public class MerleGenerateCoatTask extends AbstractGenerateCoatTask
 	private long fieldCalcsPerformed;
 	private int fieldPixelsRemaining;
 
-
-	/**
-	 * Extensible but protected constructor. Instantiate via Builder only!
-	 */
-	protected MerleGenerateCoatTask( )
+	public MerleGenerateCoatTask( GenerateConfig config )
 	{
+		super( config );
+
 	} // MerleGenerateCoatTask
 
 
@@ -118,7 +92,7 @@ public class MerleGenerateCoatTask extends AbstractGenerateCoatTask
 		ColorGene gene = null;
 
 		Random rand = getRandom( );
-		for ( ColorGene candidate : getColorGenes( ) )
+		for ( ColorGene candidate : getConfig( ).getColorGenes( ) )
 			{
 			double prob = candidate.getSeedConversionProb( ) - ( candidate.getSeedConversionProb( )
 					* candidate.getCoolingRate( ) * ( getIteration( ) - 1 ) );
@@ -149,20 +123,12 @@ public class MerleGenerateCoatTask extends AbstractGenerateCoatTask
 	@Override
 	protected long estimateRemainingCalcs( )
 	{
-		long maxArea = getWidth( ) * getHeight( );
+		long maxArea = getConfig( ).getWidth( ) * getConfig( ).getHeight( );
 		double areaComplete = ( double ) ( maxArea - fieldPixelsRemaining ) / maxArea;
 		double estTotalWork = ( fieldCalcsPerformed / areaComplete );
 		return ( ( ( long ) estTotalWork ) - fieldCalcsPerformed );
 
 	} // estimateTotalCalcs
-
-
-	@Override
-	public String getAlgorithmName( )
-	{
-		return ALGORITHM_NAME;
-
-	} // getAlgorithmName
 
 
 	@Override
@@ -176,8 +142,8 @@ public class MerleGenerateCoatTask extends AbstractGenerateCoatTask
 	@Override
 	protected void render( )
 	{
-		int width = getWidth( );
-		int height = getHeight( );
+		int width = getConfig( ).getWidth( );
+		int height = getConfig( ).getHeight( );
 
 		// Keep track of remaining uncalculated points. To begin with, we have all of
 		// them. We'll iterate in queue order until the source queue is empty. Note that

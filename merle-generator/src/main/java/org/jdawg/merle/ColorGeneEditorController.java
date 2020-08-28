@@ -68,7 +68,6 @@ public class ColorGeneEditorController implements Initializable
 	@FXML
 	private Canvas fieldSamplePattern;
 
-
 	public void acceptChanges( )
 	{
 		// TODO - This should probably just look up the ColorGene in the list and replace
@@ -194,8 +193,8 @@ public class ColorGeneEditorController implements Initializable
 		fieldPatternService.setWidth( ( int ) fieldSamplePattern.getWidth( ) );
 		fieldPatternService.setHeight( ( int ) fieldSamplePattern.getHeight( ) );
 		fieldPatternService.setIterationLimit( 5 );
-		fieldPatternService.setAlgorithm(
-				GenerateCoatTaskBuilderFactory.getSupportedAlgorithms( ).iterator( ).next( ) );
+		fieldPatternService
+				.setAlgorithm( GenerateCoatTaskFactory.getKnownAlgorithms( ).iterator( ).next( ) );
 		fieldPatternService.setOnSucceeded( this::redrawPattern );
 
 	} // initService

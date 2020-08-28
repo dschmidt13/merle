@@ -119,7 +119,6 @@ public class MainController implements Initializable
 	@FXML
 	private Canvas fieldNoseColorCanvas;
 
-
 	/**
 	 * MainController constructor.
 	 */
@@ -596,8 +595,7 @@ public class MainController implements Initializable
 		initDialogs( );
 
 		// Initialize the algorithm selector.
-		fieldAlgorithmSelector.getItems( )
-				.addAll( GenerateCoatTaskBuilderFactory.getSupportedAlgorithms( ) );
+		fieldAlgorithmSelector.getItems( ).addAll( GenerateCoatTaskFactory.getKnownAlgorithms( ) );
 		fieldAlgorithmSelector.getSelectionModel( ).selectedItemProperty( )
 				.addListener( ( obs, old, nw ) -> {
 				if ( fieldColorGeneEditorController != null )

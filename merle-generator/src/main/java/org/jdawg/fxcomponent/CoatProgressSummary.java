@@ -76,7 +76,6 @@ public class CoatProgressSummary extends BorderPane implements Initializable
 	@FXML
 	private Label fieldLabelEstRemainingTime;
 
-
 	/**
 	 * CoatProgressSummary constructor.
 	 */
@@ -168,12 +167,13 @@ public class CoatProgressSummary extends BorderPane implements Initializable
 			}
 		else
 			{
-			fieldLabelAlgorithm.setText( fieldCoatProgress.getAlgorithmName( ) == null ? ""
-					: fieldCoatProgress.getAlgorithmName( ) );
-			fieldLabelRandomSeed.setText( fieldCoatProgress.getRandomSeed( ) == null ? ""
-					: String.valueOf( fieldCoatProgress.getRandomSeed( ) ) );
-			fieldLabelIterationLimit.setText( ( fieldCoatProgress.getIterationLimit( ) <= 0 ? "None"
-					: String.valueOf( fieldCoatProgress.getIterationLimit( ) ) ) );
+			fieldLabelAlgorithm.setText( fieldCoatProgress.getConfig( ).getAlgorithmName( ) == null
+					? "" : fieldCoatProgress.getConfig( ).getAlgorithmName( ) );
+			fieldLabelRandomSeed.setText( fieldCoatProgress.getConfig( ).getRandomSeed( ) == null
+					? "" : String.valueOf( fieldCoatProgress.getConfig( ).getRandomSeed( ) ) );
+			fieldLabelIterationLimit.setText(
+					( fieldCoatProgress.getConfig( ).getIterationLimit( ) <= 0 ? "None" : String
+							.valueOf( fieldCoatProgress.getConfig( ).getIterationLimit( ) ) ) );
 			fieldLabelIterations.setText( String.valueOf( fieldCoatProgress.getIterations( ) ) );
 			fieldLabelCalculations
 					.setText( getCountSummary( fieldCoatProgress.getCalculationsPerformed( ) ) );

@@ -5,7 +5,7 @@
  */
 package org.jdawg.merle.algorithms;
 
-import org.jdawg.merle.AbstractGenerateCoatTask;
+import org.jdawg.merle.config.GenerateConfig;
 
 /**
  * MerleGenerateCoatLinearDistanceTask overrides the default MerleGenerateCoatTask's
@@ -21,40 +21,14 @@ public class MerleGenerateCoatLinearDistanceTask extends MerleGenerateCoatTask
 	// extending the original Merle algorithm class?
 
 	/**
-	 * Builds an instance of MerleGenerateCoatLinearDistanceTask.
-	 * 
-	 * @author David Schmidt (dschmidt13@gmail.com)
-	 */
-	public static class Builder extends MerleGenerateCoatTask.Builder
-	{
-		/**
-		 * Public constructor.
-		 */
-		public Builder( )
-		{
-		} // Builder
-
-
-		@Override
-		protected AbstractGenerateCoatTask createInstance( )
-		{
-			return new MerleGenerateCoatLinearDistanceTask( );
-
-		} // createInstance
-
-	} // Builder
-
-	/**
 	 * The name and factory key for this algorithm.
 	 */
 	public static final String ALGORITHM_NAME = "Merle-DistanceInverse";
 
-
-	/**
-	 * Private constructor. Instantiate via Builder.
-	 */
-	private MerleGenerateCoatLinearDistanceTask( )
+	public MerleGenerateCoatLinearDistanceTask( GenerateConfig config )
 	{
+		super( config );
+
 	} // MerleGenerateCoatLinearDistanceTask
 
 
@@ -64,13 +38,5 @@ public class MerleGenerateCoatLinearDistanceTask extends MerleGenerateCoatTask
 		return signalStrength / distance;
 
 	} // degradeSignal
-
-
-	@Override
-	public String getAlgorithmName( )
-	{
-		return ALGORITHM_NAME;
-
-	} // getAlgorithmName
 
 }
