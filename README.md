@@ -59,6 +59,22 @@ Alternately, if using a different debugger, launch like so:
 and then connect to the waiting application, using the remote Java debugger of
 your choice, via Port 9099.
 
+Troubleshooting
+---
+##### Unsupported class file major version 57
+If this shows up in the Console or Problems view while building in Eclipse,
+first check that you can build and run the project without modifications from
+the command line outside Eclipse. If so, this is likely an issue caused by
+Buildship, the Eclipse plugin that manages Gradle projects. It occurs when
+Eclipse is itself executing in a later JVM than Java SE 11, such as Java SE 13.
+To resolve it, close Eclipse, then go to your Eclipse installation directory and
+modify the eclipse.ini file to point to the bin folder of a valid Java SE 11
+installation, a la:
+
+    ...
+    -vm C:/Program Files/Java/openjdk-11/bin
+    ...
+
 License: Free-For-All (FFA)
 ---
 This code and codebase may be used and propagated with no restrictions,
