@@ -5,9 +5,17 @@
  */
 package org.jdawg.merle.config;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.List;
 
 import org.jdawg.merle.ColorGene;
+import org.jdawg.util.DefaultNamingStrategy;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import javafx.scene.paint.Color;
 
@@ -42,6 +50,48 @@ public class GenerateConfig
 		fieldAlgorithmName = validatedBuilder.getAlgorithmName( );
 
 	} // GenerateConfig
+
+
+	public static void save( GenerateConfig config, Path path )
+			throws IOException
+	{
+		// Convert the config object to JSON.
+		Gson gson = new GsonBuilder( ).setFieldNamingStrategy( new DefaultNamingStrategy( ) )
+				.create( );
+		String json = gson.toJson( config );
+
+		// Write it to a file.
+		Files.writeString( path, json, StandardOpenOption.WRITE, StandardOpenOption.CREATE,
+				StandardOpenOption.TRUNCATE_EXISTING );
+
+	} // save
+
+
+	@Override
+	public boolean equals( Object obj )
+	{
+		// TODO Auto-generated method stub
+		return super.equals( obj );
+
+	} // equals
+
+
+	@Override
+	public int hashCode( )
+	{
+		// TODO Auto-generated method stub
+		return super.hashCode( );
+
+	} // hashCode
+
+
+	@Override
+	public String toString( )
+	{
+		// TODO Auto-generated method stub
+		return super.toString( );
+
+	} // toString
 
 
 	/**
