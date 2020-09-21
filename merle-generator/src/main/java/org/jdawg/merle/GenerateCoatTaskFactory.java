@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
+import org.jdawg.merle.algorithms.GenerateAlgorithm;
 import org.jdawg.merle.algorithms.MerleGenerateCoatLinearDistanceTask;
 import org.jdawg.merle.algorithms.MerleGenerateCoatTask;
 import org.jdawg.merle.config.GenerateConfig;
@@ -24,16 +25,16 @@ import org.jdawg.merle.config.GenerateConfig;
 public class GenerateCoatTaskFactory
 {
 	// Class constants.
-	private static final Map<String, Function<GenerateConfig, AbstractGenerateCoatTask>> CONFIG_MAP = new HashMap<>( );
+	private static final Map<String, Function<GenerateConfig, ? extends AbstractGenerateCoatTask>> CONFIG_MAP = new HashMap<>( );
 
 	static
 		{
 		// TODO - Perhaps this could be loaded from a file somehow? But we'd have to
-		// construct via reflection, which we can't guarantee will work. Closures suffice
-		// for now; this is app-level, not library-level.
-		CONFIG_MAP.put( MerleGenerateCoatTask.ALGORITHM_NAME,
+		// construct via reflection, which we can't guarantee will always work. Closures
+		// suffice for now; this is app-level, not library-level.
+		registerAlgorithmClass( MerleGenerateCoatTask.class,
 				( config ) -> new MerleGenerateCoatTask( config ) );
-		CONFIG_MAP.put( MerleGenerateCoatLinearDistanceTask.ALGORITHM_NAME,
+		registerAlgorithmClass( MerleGenerateCoatLinearDistanceTask.class,
 				( config ) -> new MerleGenerateCoatLinearDistanceTask( config ) );
 		}
 
@@ -46,6 +47,26 @@ public class GenerateCoatTaskFactory
 		throw new AssertionError( "Cannot instantiate static class." );
 
 	} // GenerateCoatTaskFactory
+
+
+	private static <T extends AbstractGenerateCoatTask> void registerAlgorithmClass( Class<T> clazz,
+			Function<GenerateConfig, T> constructor )
+	{
+		// Look up the handle of the generator algorithm from its annotation.
+		GenerateAlgorithm generateAnnotation = clazz
+				.getDeclaredAnnotation( GenerateAlgorithm.class );
+		if ( null == generateAnnotation )
+			{
+			throw new IllegalArgumentException(
+					"The class '" + clazz.getName( ) + "' is not a valid coat generation algorithm."
+							+ " (It is missing the @GenerateAlgorithm annotation.)" );
+			}
+		String name = generateAnnotation.value( );
+
+		// Place it in the map.
+		CONFIG_MAP.put( name, constructor );
+
+	} // registerAlgorithmClass
 
 
 	public static AbstractGenerateCoatTask createTask( GenerateConfig config )

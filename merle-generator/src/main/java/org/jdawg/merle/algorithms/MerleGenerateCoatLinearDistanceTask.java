@@ -14,16 +14,12 @@ import org.jdawg.merle.config.GenerateConfig;
  * 
  * @author David Schmidt (dschmidt13@gmail.com)
  */
+@GenerateAlgorithm( "Merle-DistanceInverse" )
 public class MerleGenerateCoatLinearDistanceTask extends MerleGenerateCoatTask
 {
 	// LAM - It may be better to allow ColorGenes to specify their own bits of expression
 	// code to be wrapped as configurable functions and used to decay signals without
 	// extending the original Merle algorithm class?
-
-	/**
-	 * The name and factory key for this algorithm.
-	 */
-	public static final String ALGORITHM_NAME = "Merle-DistanceInverse";
 
 	public MerleGenerateCoatLinearDistanceTask( GenerateConfig config )
 	{

@@ -33,11 +33,9 @@ import javafx.scene.paint.Color;
  * 
  * @author David Schmidt (dschmidt13@gmail.com)
  */
+@GenerateAlgorithm( "Merle-DistanceInverseSquare" )
 public class MerleGenerateCoatTask extends AbstractGenerateCoatTask
 {
-	// Class constants.
-	public static final String ALGORITHM_NAME = "Merle-DistanceInverseSquare";
-
 	// Data members.
 	private Map<Point, ColorGene> fieldSeeds = new HashMap<>( );
 	private long fieldCalcsPerformed;
