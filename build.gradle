@@ -1,0 +1,78 @@
+plugins
+{
+	id 'application'
+	id 'org.openjfx.javafxplugin' version '0.0.13'
+	id 'eclipse'
+}
+
+
+repositories
+{
+	mavenCentral()
+}
+
+
+dependencies
+{
+	// https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-api
+	implementation 'org.apache.logging.log4j:log4j-api:2.17.2'
+	// https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core
+	implementation 'org.apache.logging.log4j:log4j-core:2.17.2'
+	// https://mvnrepository.com/artifact/com.google.code.gson/gson
+	implementation 'com.google.code.gson:gson:2.9.0'
+
+	// Use JUnit test framework (using JUnit 5, i.e. Jupiter engine and API)
+	// https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api
+	testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
+	// https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-engine
+	testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
+	// https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-params
+	testImplementation 'org.junit.jupiter:junit-jupiter-params:5.8.2'
+	// https://mvnrepository.com/artifact/org.junit.platform/junit-platform-commons
+	testRuntimeOnly 'org.junit.platform:junit-platform-commons:1.8.2'
+}
+
+
+javafx
+{
+	version = '17'
+	modules = [ 'javafx.controls', 'javafx.fxml', 'javafx.swing' ]
+
+	// TODO - Cross-platform dist support (see https://github.com/openjfx/javafx-gradle-plugin):
+	// JavaFX modules require native binaries for each platform. The plugin only includes binaries for the platform
+	// running the build. By declaring the dependency configuration compileOnly, the native binaries will not be
+	// included. You will need to provide those separately during deployment for each target platform.
+	// configuration = 'compileOnly'
+}
+
+
+application
+{
+	// Define the main class for the application.
+	mainClass = 'org.jdawg.merle.AppMain'
+}
+
+
+run
+{
+	if (javafx.platform.classifier == 'win')
+	{
+		// Temporal fix for Eclipse with JDK 1.8 and Windows 
+		systemProperty "java.library.path", "C:\tmp"
+	}
+}
+
+
+tasks.withType(JavaExec)
+{
+	if ( System.getProperty( 'DEBUG', 'false' ) == 'true' )
+	{
+		jvmArgs '-Xdebug', '-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=9099'
+	}
+}
+
+
+test
+{
+	useJUnitPlatform()
+}
