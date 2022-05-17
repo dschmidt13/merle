@@ -29,7 +29,6 @@ Dependencies (Installed Locally)
 ---
 
  - Java SE 11+
- - Gradle
  - git
 
 Running the Project
@@ -39,13 +38,13 @@ To run the project, run the following commands in a terminal:
     cd .../a_code_folder/
     git clone https://github.com/dschmidt13/merle.git merle
     cd merle
-    gradle run
+    ./gradlew run
 
 Debugging the Project
 ---
 To debug the project in [Eclipse](https://www.eclipse.org/):
 
-1. Import it into Eclipse
+1. Import it into Eclipse: File -> Import... -> Existing Gradle Project -> Finish
 2. Use the "application -> run" Gradle Task (requires "Eclipse Buildship" plugin)
 3. Wait for the message "Listening for transport dt_socket at address: 9099" in
 the Console
